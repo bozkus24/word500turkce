@@ -629,6 +629,44 @@ select {
 .hesap-kimlik b { font-size: .95rem; word-break: break-word; }
 .hesap-kimlik p { margin: .15rem 0 0; }
 
+/* ------------------------------------------------------------ Liderlik */
+
+.liderlik-sekmeler { display: flex; gap: .4rem; margin: .75rem 0; }
+.liderlik-sekme {
+  flex: 1 1 0;
+  border: 1px solid var(--cizgi);
+  background: var(--zemin);
+  color: var(--yazi);
+  border-radius: 999px;
+  padding: .4rem .3rem;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.liderlik-sekme[aria-selected="true"] { background: var(--yesil); border-color: var(--yesil); color: var(--yesil-yazi); }
+
+.liderlik-liste { display: flex; flex-direction: column; gap: .3rem; min-height: 4rem; margin-bottom: .5rem; }
+.liderlik-satiri {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  background: var(--zemin);
+  border: 1px solid var(--cizgi);
+  border-radius: 8px;
+  padding: .45rem .65rem;
+  font-size: .88rem;
+}
+.liderlik-satiri.benim { border-color: var(--yesil); box-shadow: inset 0 0 0 1px var(--yesil); }
+.liderlik-sira { width: 1.6rem; text-align: center; font-weight: 800; color: var(--yazi-soluk); font-variant-numeric: tabular-nums; }
+.liderlik-satiri:nth-child(1) .liderlik-sira,
+.liderlik-satiri:nth-child(2) .liderlik-sira,
+.liderlik-satiri:nth-child(3) .liderlik-sira { color: var(--sari); }
+.liderlik-ad { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.liderlik-seri { font-weight: 800; font-variant-numeric: tabular-nums; }
+.liderlik-seri span { font-size: .7rem; font-weight: 600; color: var(--yazi-soluk); margin-left: .15rem; }
+.liderlik-bos { text-align: center; color: var(--yazi-soluk); font-size: .85rem; padding: 1rem 0; }
+.liderlik-katil { border-top: 1px solid var(--cizgi); margin-top: .5rem; padding-top: .25rem; }
+
 /* -------------------------------------------------------- Kelime arama */
 
 .alan { display: block; margin: .75rem 0; }
@@ -741,6 +779,9 @@ select {
   <div class="arac-seridi">
     <button class="arac" id="dugme-arama" type="button">
       <span aria-hidden="true">🔍</span> Kelime ara
+    </button>
+    <button class="arac gizli" id="dugme-liderlik" type="button">
+      <span aria-hidden="true">🏆</span> Liderlik
     </button>
     <button class="arac gizli" id="dugme-yeni" type="button">
       <span aria-hidden="true">🔄</span> Yeni kelime
@@ -1021,6 +1062,41 @@ select {
       <span>Sonraki bulmacaya</span>
       <b id="geri-sayim-saat-sonuc">--:--:--</b>
     </div>
+  </div>
+</div>
+
+<!-- ---------------------------------------------------------- Liderlik -->
+<div class="perde" id="perde-liderlik" hidden>
+  <div class="kutu" role="dialog" aria-modal="true" aria-labelledby="baslik-liderlik">
+    <button class="kapat" type="button" data-kapat aria-label="Kapat">×</button>
+    <h2 id="baslik-liderlik">🏆 Liderlik Tablosu</h2>
+    <p class="kucuk">En uzun serilere göre ilk 20. Her zorluk seviyesinin kendi sıralaması vardır.</p>
+
+    <div class="liderlik-sekmeler" id="liderlik-sekmeler" role="tablist"></div>
+
+    <div class="liderlik-liste" id="liderlik-liste" aria-live="polite"></div>
+
+    <div class="liderlik-katil gizli" id="liderlik-katil">
+      <div class="ayar">
+        <div>
+          <b>Liderlik tablosunda yer al</b>
+          <p class="kucuk">Görünen adınız ve en uzun serileriniz herkese açık olur.</p>
+        </div>
+        <label class="anahtar">
+          <input type="checkbox" id="liderlik-anahtar">
+          <span class="anahtar-govde" aria-hidden="true"></span>
+        </label>
+      </div>
+      <label class="alan gizli" id="liderlik-ad-alan">
+        <span>Görünen ad</span>
+        <input type="text" id="liderlik-ad" maxlength="20" autocomplete="off"
+               spellcheck="false" placeholder="Takma adınız">
+      </label>
+    </div>
+
+    <p class="kucuk" id="liderlik-giris-notu" hidden>
+      Sıralamada yer almak için Ayarlar'dan <strong>Google ile giriş</strong> yapın.
+    </p>
   </div>
 </div>
 
@@ -1503,7 +1579,9 @@ select {
     seviye: 'standart',
     tema: 'koyu',        // koyu | acik | sistem
     yuksekKontrast: false,
-    klavyeAcik: true
+    klavyeAcik: true,
+    liderlikKatil: false, // liderlik tablosunda herkese açık görünme
+    liderlikAd: ''        // liderlikte görünen ad (takma ad)
   };
 
   function ayarlariAl() {
@@ -1686,6 +1764,7 @@ select {
     seviyeSecenekleriniCiz();
     baglantilariKur();
     hesapKur();
+    liderlikKur();
     oyunKur('gunluk', ayarlar.seviye);
 
     // İlk ziyarette yardım kutusunu aç. (localStorage erişimi bazı gizlilik
@@ -2256,6 +2335,25 @@ select {
     if (!Bulut || !Bulut.etkin || !Bulut.kullanici || !Bulut.kullanici()) return;
     Bulut.istatistikleriKaydet(Depo.tumIstatistikleriAl(K.SEVIYELER))
       .catch(function () { /* sessiz: bir sonraki oyunda yeniden denenir */ });
+    liderligeGonder();
+  }
+
+  // Katılım açıksa güncel serileri herkese açık liderlik tablosuna yazar.
+  function liderligeGonder() {
+    var Bulut = window.Word500trBulut;
+    if (!Bulut || !Bulut.etkin || !Bulut.kullanici || !Bulut.kullanici()) return;
+    if (!ayarlar.liderlikKatil) return;
+    Bulut.liderlikYaz(liderlikAdiAl(), Depo.tumIstatistikleriAl(K.SEVIYELER))
+      .catch(function () { /* sessiz */ });
+  }
+
+  // Görünen ad: kullanıcının seçtiği takma ad, yoksa Google adının ilk parçası.
+  function liderlikAdiAl() {
+    if (ayarlar.liderlikAd) return ayarlar.liderlikAd;
+    var Bulut = window.Word500trBulut;
+    var k = Bulut && Bulut.kullanici && Bulut.kullanici();
+    var ad = (k && k.displayName) ? k.displayName.split(' ')[0] : 'Anonim';
+    return ad.slice(0, 20);
   }
 
   // Giriş yapıldığında bulut ile yerel istatistikleri birleştirir.
@@ -2272,6 +2370,8 @@ select {
       });
       // Birleşmiş sonucu buluta geri yaz ki iki taraf da güncel olsun.
       Bulut.istatistikleriKaydet(birlesikTum).catch(function () {});
+      // Katılım açıksa liderlik kaydını da güncelle.
+      liderligeGonder();
       // Açık istatistik kutusu varsa tazele.
       var perde = $('#perde-istatistik');
       if (perde && !perde.hidden && durum) istatistikGoster();
@@ -2290,6 +2390,7 @@ select {
     window.addEventListener('word500tr:girisdegisti', function (olay) {
       var kullanici = olay.detail && olay.detail.kullanici;
       hesapArayuzunuCiz(kullanici);
+      liderlikKatilimGuncelle();
       if (kullanici) hesapVerileriniCek();
     });
 
@@ -2316,6 +2417,123 @@ select {
     if (window.Word500trBulut && window.Word500trBulut.kullanici) {
       hesapArayuzunuCiz(window.Word500trBulut.kullanici());
     }
+  }
+
+  // ------------------------------------------------------------- Liderlik
+
+  var liderlikSeviye = null; // açık olan sekme
+
+  function liderlikKur() {
+    if (!bulutYapilandirildiMi()) return; // liderlik buluta bağlı
+    $('#dugme-liderlik').classList.remove('gizli');
+
+    // Zorluk sekmeleri
+    var kap = $('#liderlik-sekmeler');
+    K.SEVIYELER.forEach(function (seviye) {
+      var bilgi = K.SEVIYE_BILGISI[seviye];
+      var dugme = document.createElement('button');
+      dugme.className = 'liderlik-sekme';
+      dugme.type = 'button';
+      dugme.dataset.seviye = seviye;
+      dugme.setAttribute('role', 'tab');
+      dugme.textContent = bilgi.simge + ' ' + bilgi.ad;
+      dugme.addEventListener('click', function () { liderlikSekmeSec(seviye); });
+      kap.appendChild(dugme);
+    });
+
+    $('#liderlik-anahtar').addEventListener('change', function () {
+      var acik = this.checked;
+      ayarlar = Depo.ayarKaydet('liderlikKatil', acik);
+      $('#liderlik-ad-alan').classList.toggle('gizli', !acik);
+      var Bulut = window.Word500trBulut;
+      if (acik) {
+        if (!ayarlar.liderlikAd) $('#liderlik-ad').value = liderlikAdiAl();
+        liderligeGonder();
+        bildir('Liderlik tablosuna eklendiniz');
+        liderlikYukle(liderlikSeviye);
+      } else if (Bulut && Bulut.liderliktenCik) {
+        Bulut.liderliktenCik().catch(function () {});
+        bildir('Liderlik tablosundan çıkıldı');
+        liderlikYukle(liderlikSeviye);
+      }
+    });
+
+    // Takma ad değişince kaydet ve (katılım açıksa) yansıt.
+    var adGirdi = $('#liderlik-ad');
+    adGirdi.addEventListener('change', function () {
+      var ad = this.value.trim().slice(0, 20);
+      ayarlar = Depo.ayarKaydet('liderlikAd', ad);
+      if (ayarlar.liderlikKatil) liderligeGonder();
+    });
+  }
+
+  function liderlikKatilimGuncelle() {
+    var Bulut = window.Word500trBulut;
+    var girisli = !!(Bulut && Bulut.etkin && Bulut.kullanici && Bulut.kullanici());
+    $('#liderlik-katil').classList.toggle('gizli', !girisli);
+    $('#liderlik-giris-notu').hidden = girisli;
+    if (girisli) {
+      $('#liderlik-anahtar').checked = !!ayarlar.liderlikKatil;
+      $('#liderlik-ad-alan').classList.toggle('gizli', !ayarlar.liderlikKatil);
+      $('#liderlik-ad').value = ayarlar.liderlikAd || liderlikAdiAl();
+    }
+  }
+
+  function liderlikSekmeSec(seviye) {
+    liderlikSeviye = seviye;
+    hepsi('#liderlik-sekmeler .liderlik-sekme').forEach(function (d) {
+      d.setAttribute('aria-selected', d.dataset.seviye === seviye ? 'true' : 'false');
+    });
+    liderlikYukle(seviye);
+  }
+
+  function liderlikYukle(seviye) {
+    var kap = $('#liderlik-liste');
+    kap.innerHTML = '<p class="liderlik-bos">Yükleniyor…</p>';
+    var Bulut = window.Word500trBulut;
+    if (!Bulut || !Bulut.etkin || !Bulut.liderlikGetir) {
+      kap.innerHTML = '<p class="liderlik-bos">Liderlik şu an kullanılamıyor.</p>';
+      return;
+    }
+    var benimUid = (Bulut.kullanici && Bulut.kullanici()) ? Bulut.kullanici().uid : null;
+    Bulut.liderlikGetir(seviye, 20).then(function (liste) {
+      if (seviye !== liderlikSeviye) return; // sekme değişmişse eski isteği yoksay
+      if (!liste || !liste.length) {
+        kap.innerHTML = '<p class="liderlik-bos">Henüz kimse yok. İlk sen ol!</p>';
+        return;
+      }
+      kap.innerHTML = '';
+      liste.forEach(function (kayit, indeks) {
+        var satir = document.createElement('div');
+        satir.className = 'liderlik-satiri' + (kayit.uid === benimUid ? ' benim' : '');
+
+        var sira = document.createElement('span');
+        sira.className = 'liderlik-sira';
+        sira.textContent = (indeks + 1);
+
+        var ad = document.createElement('span');
+        ad.className = 'liderlik-ad';
+        ad.textContent = kayit.ad;
+
+        var seri = document.createElement('span');
+        seri.className = 'liderlik-seri';
+        seri.innerHTML = kayit.enUzunSeri + '<span>en uzun</span>';
+
+        satir.appendChild(sira);
+        satir.appendChild(ad);
+        satir.appendChild(seri);
+        kap.appendChild(satir);
+      });
+    }).catch(function () {
+      if (seviye !== liderlikSeviye) return;
+      kap.innerHTML = '<p class="liderlik-bos">Liste alınamadı. Sonra tekrar deneyin.</p>';
+    });
+  }
+
+  function liderlikAc() {
+    liderlikKatilimGuncelle();
+    liderlikSekmeSec(durum ? durum.seviye : 'standart');
+    kutuAc('perde-liderlik');
   }
 
   // ------------------------------------------------------------ İstatistik
@@ -2566,6 +2784,7 @@ select {
       aramaYap();
       kutuAc('perde-arama');
     });
+    $('#dugme-liderlik').addEventListener('click', liderlikAc);
 
     // Kutu kapatma
     hepsi('.perde').forEach(function (perde) {
@@ -2693,6 +2912,47 @@ select {
           istatistikler: tumIstatistikler,
           guncelleme: fs.serverTimestamp()
         }, { merge: true });
+      },
+
+      // -------------------------------------------------------- Liderlik
+      // Herkese açık 'liderlik' koleksiyonu: yalnızca sahibi yazar, herkes okur.
+      liderlikYaz: async function (ad, tumIstatistikler) {
+        if (!kullaniciSon) return;
+        var belge = { ad: String(ad || '').slice(0, 20), guncelleme: fs.serverTimestamp() };
+        Object.keys(tumIstatistikler || {}).forEach(function (seviye) {
+          var i = tumIstatistikler[seviye] || {};
+          belge[seviye] = {
+            enUzunSeri: i.enUzunSeri || 0,
+            seri: i.seri || 0,
+            kazanilan: i.kazanilan || 0,
+            oynanan: i.oynanan || 0
+          };
+        });
+        await fs.setDoc(fs.doc(db, 'liderlik', kullaniciSon.uid), belge);
+      },
+      liderliktenCik: async function () {
+        if (!kullaniciSon) return;
+        await fs.deleteDoc(fs.doc(db, 'liderlik', kullaniciSon.uid));
+      },
+      liderlikGetir: async function (seviye, adet) {
+        var sorgu = fs.query(
+          fs.collection(db, 'liderlik'),
+          fs.orderBy(seviye + '.enUzunSeri', 'desc'),
+          fs.limit(adet || 20)
+        );
+        var anlik = await fs.getDocs(sorgu);
+        var sonuc = [];
+        anlik.forEach(function (belge) {
+          var d = belge.data();
+          var s = d[seviye] || {};
+          sonuc.push({
+            uid: belge.id,
+            ad: d.ad || 'Anonim',
+            enUzunSeri: s.enUzunSeri || 0,
+            seri: s.seri || 0
+          });
+        });
+        return sonuc;
       }
     };
 
