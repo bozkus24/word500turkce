@@ -620,6 +620,15 @@ select {
 .anahtar input:checked + .anahtar-govde::after { transform: translateX(1.2rem); }
 .anahtar input:focus-visible + .anahtar-govde { outline: 2px solid var(--yesil); outline-offset: 2px; }
 
+/* --------------------------------------------------------------- Hesap */
+
+.hesap-alani { margin-bottom: .25rem; }
+.hesap-alani .tam-genislik { width: 100%; justify-content: center; }
+.hesap-alani .ayrac { border: 0; border-top: 1px solid var(--cizgi); margin: 1rem 0 .25rem; }
+.hesap-kimlik { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.hesap-kimlik b { font-size: .95rem; word-break: break-word; }
+.hesap-kimlik p { margin: .15rem 0 0; }
+
 /* -------------------------------------------------------- Kelime arama */
 
 .alan { display: block; margin: .75rem 0; }
@@ -892,6 +901,27 @@ select {
     <button class="kapat" type="button" data-kapat aria-label="Kapat">×</button>
     <h2 id="baslik-ayarlar">Ayarlar</h2>
 
+    <div class="hesap-alani gizli" id="hesap-alani">
+      <div id="hesap-giris">
+        <p class="kucuk" style="margin-top: 0">
+          Google ile giriş yapın; serileriniz ve istatistikleriniz tüm
+          cihazlarınızda senkronlansın.
+        </p>
+        <button class="arac vurgulu tam-genislik" id="dugme-giris" type="button">
+          <span aria-hidden="true">🔑</span> Google ile giriş yap
+        </button>
+      </div>
+      <div class="hesap-kimlik gizli" id="hesap-oturum">
+        <div>
+          <b id="hesap-ad">Hesabım</b>
+          <p class="kucuk" id="hesap-eposta"></p>
+          <p class="kucuk">Seriler bu hesapta senkronlanıyor.</p>
+        </div>
+        <button class="arac tehlike" id="dugme-cikis" type="button">Çıkış</button>
+      </div>
+      <hr class="ayrac">
+    </div>
+
     <div class="ayar">
       <div>
         <b>Tema</b>
@@ -929,6 +959,10 @@ select {
     <p class="kucuk altbilgi">
       word500tr — <a href="https://word500.com/" target="_blank" rel="noopener">word500.com</a>
       oyununun Türkçe uyarlaması. Kelime listeleri açık kaynaklı Türkçe sözlüklerden derlenmiştir.
+    </p>
+    <p class="kucuk" style="margin-top: .5rem">
+      <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a> ·
+      <a href="kosullar.html" target="_blank" rel="noopener">Kullanım Koşulları</a>
     </p>
   </div>
 </div>
@@ -1537,6 +1571,21 @@ select {
     return bosIstatistik();
   }
 
+  // Bulut senkronu için: verilen seviyelerin istatistiklerini tek nesnede toplar.
+  function tumIstatistikleriAl(seviyeler) {
+    var sonuc = {};
+    (seviyeler || []).forEach(function (seviye) {
+      sonuc[seviye] = istatistikAl(seviye);
+    });
+    return sonuc;
+  }
+
+  // Buluttan birleştirilmiş bir kaydı doğrudan yazar.
+  function istatistikYaz(seviye, ist) {
+    yaz('istatistik.' + seviye, ist);
+    return ist;
+  }
+
   // ------------------------------------------------------------ Kayıtlı oyun
 
   function oyunAnahtari(seviye, tarihAnahtari) {
@@ -1587,6 +1636,8 @@ select {
     istatistikAl: istatistikAl,
     sonucKaydet: sonucKaydet,
     istatistikSifirla: istatistikSifirla,
+    tumIstatistikleriAl: tumIstatistikleriAl,
+    istatistikYaz: istatistikYaz,
     oyunAl: oyunAl,
     oyunKaydet: oyunKaydet
   };
@@ -1634,6 +1685,7 @@ select {
     klavyeCiz();
     seviyeSecenekleriniCiz();
     baglantilariKur();
+    hesapKur();
     oyunKur('gunluk', ayarlar.seviye);
 
     // İlk ziyarette yardım kutusunu aç. (localStorage erişimi bazı gizlilik
@@ -1970,6 +2022,7 @@ select {
     if (durum.bitti) {
       if (durum.mod === 'gunluk') {
         Depo.sonucKaydet(durum.seviye, durum.bulmacaNo, kazandi, durum.gecmis.length);
+        hesabaGonder();
       }
       // Kutular dönmesini bitirmeden ne zafer animasyonu ne de sonuç kutusu gelsin.
       var bekleme = cevirmeSuresi();
@@ -2148,6 +2201,120 @@ select {
       return sonuc;
     } catch (hata) {
       return false;
+    }
+  }
+
+  // ---------------------------------------------------------------- Hesap
+  //
+  // Google girişi ve bulut senkronu isteğe bağlıdır: firebase-config.js içinde
+  // geçerli bir yapılandırma yoksa hesap bölümü hiç gösterilmez ve oyun eskisi
+  // gibi yalnızca localStorage ile çalışır. Giriş yapıldığında seriler ve
+  // istatistikler Firestore ile cihazlar arasında senkronlanır.
+
+  function bulutYapilandirildiMi() {
+    var y = window.WORD500TR_FIREBASE_CONFIG;
+    return !!(y && typeof y.apiKey === 'string' && y.apiKey && y.apiKey.indexOf('BURAYA') !== 0);
+  }
+
+  function hesapArayuzunuCiz(kullanici) {
+    var giris = $('#hesap-giris');
+    var oturum = $('#hesap-oturum');
+    if (!giris || !oturum) return;
+    if (kullanici) {
+      giris.classList.add('gizli');
+      oturum.classList.remove('gizli');
+      $('#hesap-ad').textContent = kullanici.displayName || kullanici.email || 'Hesabım';
+      $('#hesap-eposta').textContent = kullanici.email || '';
+    } else {
+      giris.classList.remove('gizli');
+      oturum.classList.add('gizli');
+    }
+  }
+
+  // Yerel ve bulut istatistiğini tek kayda indirger: daha çok oyun oynanmış
+  // olan esas alınır (dağılım/oynanan/seri oradan gelir), en uzun seri ise
+  // ikisinin büyüğüdür. Böylece iki taraf toplanıp mükerrer sayım olmaz.
+  function istatistikBirlestir(yerel, bulut) {
+    if (!bulut) return yerel;
+    if (!yerel) return bulut;
+    var bos = Depo.bosIstatistik();
+    var esas = (bulut.oynanan || 0) > (yerel.oynanan || 0) ? bulut : yerel;
+    var birlesik = {};
+    for (var alan in bos) {
+      birlesik[alan] = esas[alan] === undefined ? bos[alan] : esas[alan];
+    }
+    birlesik.enUzunSeri = Math.max(yerel.enUzunSeri || 0, bulut.enUzunSeri || 0);
+    if (!Array.isArray(birlesik.dagilim) || birlesik.dagilim.length !== 8) {
+      birlesik.dagilim = bos.dagilim;
+    }
+    return birlesik;
+  }
+
+  // Oyun bitince günlük sonucu buluta yollar (giriş yapılmışsa).
+  function hesabaGonder() {
+    var Bulut = window.Word500trBulut;
+    if (!Bulut || !Bulut.etkin || !Bulut.kullanici || !Bulut.kullanici()) return;
+    Bulut.istatistikleriKaydet(Depo.tumIstatistikleriAl(K.SEVIYELER))
+      .catch(function () { /* sessiz: bir sonraki oyunda yeniden denenir */ });
+  }
+
+  // Giriş yapıldığında bulut ile yerel istatistikleri birleştirir.
+  function hesapVerileriniCek() {
+    var Bulut = window.Word500trBulut;
+    if (!Bulut || !Bulut.etkin || !Bulut.kullanici || !Bulut.kullanici()) return;
+    Bulut.istatistikleriYukle().then(function (bulutIst) {
+      if (!bulutIst) return;
+      var birlesikTum = {};
+      K.SEVIYELER.forEach(function (seviye) {
+        var birlesik = istatistikBirlestir(Depo.istatistikAl(seviye), bulutIst[seviye]);
+        Depo.istatistikYaz(seviye, birlesik);
+        birlesikTum[seviye] = birlesik;
+      });
+      // Birleşmiş sonucu buluta geri yaz ki iki taraf da güncel olsun.
+      Bulut.istatistikleriKaydet(birlesikTum).catch(function () {});
+      // Açık istatistik kutusu varsa tazele.
+      var perde = $('#perde-istatistik');
+      if (perde && !perde.hidden && durum) istatistikGoster();
+      bildir('Seriler senkronlandı');
+    }).catch(function () { /* sessiz */ });
+  }
+
+  function hesapKur() {
+    var alan = $('#hesap-alani');
+    if (!bulutYapilandirildiMi()) {
+      if (alan) alan.classList.add('gizli');
+      return;
+    }
+    if (alan) alan.classList.remove('gizli');
+
+    window.addEventListener('word500tr:girisdegisti', function (olay) {
+      var kullanici = olay.detail && olay.detail.kullanici;
+      hesapArayuzunuCiz(kullanici);
+      if (kullanici) hesapVerileriniCek();
+    });
+
+    $('#dugme-giris').addEventListener('click', function () {
+      var Bulut = window.Word500trBulut;
+      if (!Bulut || !Bulut.etkin || !Bulut.girisYap) {
+        bildir('Giriş şu an kullanılamıyor');
+        return;
+      }
+      var dugme = this;
+      dugme.disabled = true;
+      Bulut.girisYap()
+        .catch(function () { bildir('Giriş yapılamadı'); })
+        .then(function () { dugme.disabled = false; }, function () { dugme.disabled = false; });
+    });
+
+    $('#dugme-cikis').addEventListener('click', function () {
+      var Bulut = window.Word500trBulut;
+      if (Bulut && Bulut.cikisYap) Bulut.cikisYap();
+      bildir('Çıkış yapıldı');
+    });
+
+    // Modül gecikmeli yüklenmiş olabilir; hazırsa mevcut oturumu yansıt.
+    if (window.Word500trBulut && window.Word500trBulut.kullanici) {
+      hesapArayuzunuCiz(window.Word500trBulut.kullanici());
     }
   }
 
@@ -2465,6 +2632,79 @@ select {
     document.addEventListener('DOMContentLoaded', baslat);
   } else {
     baslat();
+  }
+})();
+</script>
+
+<!-- ---------------------------------------------------------------- Bulut -->
+<!-- İsteğe bağlı Google girişi + seri senkronu (Firebase).
+     Anahtarlarınızı firebase-config.js içine girin. Dosya yoksa ya da
+     yapılandırma boşsa oyun sorunsuz biçimde localStorage ile çalışır. -->
+<script src="firebase-config.js"></script>
+<script type="module">
+// word500tr — bulut senkronu (Firebase, isteğe bağlı).
+(async function () {
+  'use strict';
+
+  var yapi = window.WORD500TR_FIREBASE_CONFIG;
+
+  function yapilandirildiMi(c) {
+    return !!(c && typeof c.apiKey === 'string' && c.apiKey && c.apiKey.indexOf('BURAYA') !== 0);
+  }
+
+  // Yapılandırma yoksa sessizce devre dışı kal: dış kaynak yüklenmez.
+  if (!yapilandirildiMi(yapi)) {
+    window.Word500trBulut = { etkin: false };
+    return;
+  }
+
+  var SURUM = '10.12.2';
+  var TABAN = 'https://www.gstatic.com/firebasejs/' + SURUM + '/';
+  var kullaniciSon = null;
+
+  try {
+    var appMod = await import(TABAN + 'firebase-app.js');
+    var authMod = await import(TABAN + 'firebase-auth.js');
+    var fs = await import(TABAN + 'firebase-firestore.js');
+
+    var app = appMod.initializeApp(yapi);
+    var auth = authMod.getAuth(app);
+    var db = fs.getFirestore(app);
+
+    function kullaniciBelgesi() {
+      return fs.doc(db, 'kullanicilar', kullaniciSon.uid);
+    }
+
+    window.Word500trBulut = {
+      etkin: true,
+      kullanici: function () { return kullaniciSon; },
+      girisYap: function () {
+        return authMod.signInWithPopup(auth, new authMod.GoogleAuthProvider());
+      },
+      cikisYap: function () { return authMod.signOut(auth); },
+      istatistikleriYukle: async function () {
+        if (!kullaniciSon) return null;
+        var anlik = await fs.getDoc(kullaniciBelgesi());
+        return anlik.exists() ? (anlik.data().istatistikler || {}) : {};
+      },
+      istatistikleriKaydet: async function (tumIstatistikler) {
+        if (!kullaniciSon) return;
+        await fs.setDoc(kullaniciBelgesi(), {
+          istatistikler: tumIstatistikler,
+          guncelleme: fs.serverTimestamp()
+        }, { merge: true });
+      }
+    };
+
+    authMod.onAuthStateChanged(auth, function (kullanici) {
+      kullaniciSon = kullanici;
+      window.dispatchEvent(new CustomEvent('word500tr:girisdegisti', {
+        detail: { kullanici: kullanici }
+      }));
+    });
+  } catch (hata) {
+    // SDK yüklenemezse (ağ, alan adı yetkisi vb.) oyun localStorage ile sürer.
+    window.Word500trBulut = { etkin: false, hata: String(hata) };
   }
 })();
 </script>
