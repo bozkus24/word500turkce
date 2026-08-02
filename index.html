@@ -333,19 +333,26 @@ button { font: inherit; color: inherit; }
 .klavye-satiri { display: flex; gap: 4px; justify-content: center; }
 
 .tus {
+  display: grid;
+  place-items: center;
   flex: 1 1 0;
   min-width: 0;
   height: 50px;
+  padding: 0;
   border: 0;
   border-radius: var(--radius);
   background: var(--tus);
   color: var(--yazi);
   font-size: 15px;
   font-weight: 700;
+  line-height: 1;
   text-transform: uppercase;
   cursor: pointer;
   transition: background .1s ease;
 }
+/* Onay/gönder simgesi (✓) diğer gliflerden farklı oturuyor; optik olarak
+   ortalamak için ölçeklenir. */
+.tus.onay { font-size: 20px; }
 .tus:hover { background: var(--tus-vurgu); }
 .tus:active { transform: translateY(1px); }
 .tus.genis { flex: 1.6 1 0; }
@@ -1593,7 +1600,7 @@ select {
 
   var VARSAYILAN_AYARLAR = {
     seviye: 'standart',
-    tema: 'koyu',        // koyu | acik | sistem
+    tema: 'sistem',      // koyu | acik | sistem — varsayılan cihaz tercihi
     yuksekKontrast: false,
     klavyeAcik: true,
     liderlikKatil: false, // liderlik tablosunda herkese açık görünme
