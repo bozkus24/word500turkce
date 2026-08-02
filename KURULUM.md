@@ -57,12 +57,21 @@ Google ile giriş ve serilerin cihazlar arası senkronu için tek seferlik bir
    rules_version = '2';
    service cloud.firestore {
      match /databases/{database}/documents {
+       // Kişisel veri: yalnızca sahibi okur/yazar.
        match /kullanicilar/{uid} {
          allow read, write: if request.auth != null && request.auth.uid == uid;
+       }
+       // Liderlik tablosu: herkes okur, yalnızca sahibi kendi kaydını yazar.
+       match /liderlik/{uid} {
+         allow read: if true;
+         allow write: if request.auth != null && request.auth.uid == uid;
        }
      }
    }
    ```
+
+   > Liderlik tablosunu sonradan eklediysen bu kuralları yeniden yapıştırıp
+   > **Publish** etmen gerekir; yoksa tablo boş görünür veya yazma hatası alırsın.
 
 ## 5. Alan adlarını yetkilendir
 

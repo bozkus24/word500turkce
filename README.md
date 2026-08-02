@@ -33,6 +33,9 @@ Her tahminin sağında üç sayı belirir:
 - **Google ile giriş (isteğe bağlı):** seriler ve istatistikler cihazlar
   arasında senkronlanır. Giriş yapılmadan oyun yine tam çalışır; ilerleme
   `localStorage` içinde saklanır.
+- **Liderlik tablosu:** her zorluk seviyesi için en uzun serilere göre ilk 20.
+  Katılım isteğe bağlıdır (görünen adınızı siz belirlersiniz); katılmayan
+  yalnızca listeyi görüntüler.
 
 ## Google girişi + seri senkronu
 
