@@ -333,8 +333,9 @@ button { font: inherit; color: inherit; }
 .klavye-satiri { display: flex; gap: 4px; justify-content: center; }
 
 .tus {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex: 1 1 0;
   min-width: 0;
   height: 50px;
@@ -350,9 +351,8 @@ button { font: inherit; color: inherit; }
   cursor: pointer;
   transition: background .1s ease;
 }
-/* Onay/gönder simgesi (✓) diğer gliflerden farklı oturuyor; optik olarak
-   ortalamak için ölçeklenir. */
-.tus.onay { font-size: 20px; }
+/* Gönder tuşunda karakter yerine SVG tik kullanılır: her cihazda tam ortalanır. */
+.tus.onay svg { display: block; width: 24px; height: 24px; }
 .tus:hover { background: var(--tus-vurgu); }
 .tus:active { transform: translateY(1px); }
 .tus.genis { flex: 1.6 1 0; }
@@ -2011,7 +2011,11 @@ select {
     eylemler.appendChild(eylemTusu('temizle', '✕', 'Satırı temizle'));
     eylemler.appendChild(eylemTusu('ipucu', '💡', 'İpucu al'));
     eylemler.appendChild(eylemTusu('bosluk', 'BOŞLUK', 'Boş yer tutucu ekle', 'bosluk'));
-    eylemler.appendChild(eylemTusu('gir', '✓', 'Tahmini gönder', 'onay'));
+    var gonder = eylemTusu('gir', '', 'Tahmini gönder', 'onay');
+    gonder.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+      'stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M5 12.5 10 17.5 19 7"/></svg>';
+    eylemler.appendChild(gonder);
     $('#klavye').appendChild(eylemler);
   }
 
