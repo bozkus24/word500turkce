@@ -759,8 +759,14 @@ select {
       <button class="ust-dugme" id="dugme-mod" type="button" aria-label="Oyun modu" title="Oyun modu">
         <span id="mod-simge" aria-hidden="true">📅</span>
       </button>
+      <button class="ust-dugme gizli" id="dugme-liderlik" type="button" aria-label="Liderlik tablosu" title="Liderlik tablosu">
+        <span aria-hidden="true">🏆</span>
+      </button>
       <button class="ust-dugme" id="dugme-istatistik" type="button" aria-label="İstatistikler" title="İstatistikler">
         <span aria-hidden="true">📊</span>
+      </button>
+      <button class="ust-dugme" id="dugme-tema" type="button" aria-label="Aydınlık / karanlık mod" title="Aydınlık / karanlık mod">
+        <span id="tema-simge" aria-hidden="true">🌙</span>
       </button>
       <button class="ust-dugme" id="dugme-ayarlar" type="button" aria-label="Ayarlar" title="Ayarlar">
         <span aria-hidden="true">⚙️</span>
@@ -779,9 +785,6 @@ select {
   <div class="arac-seridi">
     <button class="arac" id="dugme-arama" type="button">
       <span aria-hidden="true">🔍</span> Kelime ara
-    </button>
-    <button class="arac gizli" id="dugme-liderlik" type="button">
-      <span aria-hidden="true">🏆</span> Liderlik
     </button>
     <button class="arac gizli" id="dugme-yeni" type="button">
       <span aria-hidden="true">🔄</span> Yeni kelime
@@ -1249,9 +1252,21 @@ select {
 
   // Yerel tarihe göre başlangıçtan bu yana geçen gün sayısı.
   // Saat dilimi kaymalarını önlemek için gün/ay/yıl bileşenleri UTC'ye çevrilir.
-  function gunSayisi(tarih) {
+  // Günlük bulmaca herkes için Türkiye saatine (UTC+3, yaz saati yok) göre
+  // hesaplanır: kelime her gün saat 00:00'da (Türkiye) değişir ve dünyanın
+  // neresinde olursa olsun herkes aynı günün kelimesini görür.
+  var TR_OFISET_DK = 3 * 60;
+
+  // Verilen anın Türkiye saatindeki takvim alanlarını taşıyan bir tarih üretir
+  // (UTC alanları Türkiye yerel değerlerine denk gelir).
+  function trTarih(tarih) {
     var t = tarih || new Date();
-    var bugun = Date.UTC(t.getFullYear(), t.getMonth(), t.getDate());
+    return new Date(t.getTime() + TR_OFISET_DK * 60000);
+  }
+
+  function gunSayisi(tarih) {
+    var tr = trTarih(tarih);
+    var bugun = Date.UTC(tr.getUTCFullYear(), tr.getUTCMonth(), tr.getUTCDate());
     var basla = Date.UTC(BASLANGIC.yil, BASLANGIC.ay - 1, BASLANGIC.gun);
     return Math.floor((bugun - basla) / 86400000);
   }
@@ -1261,19 +1276,20 @@ select {
     return gunSayisi(tarih) + 1;
   }
 
-  // Yerel tarihi YYYY-AA-GG biçiminde verir (kayıt anahtarı olarak kullanılır).
+  // Türkiye tarihini YYYY-AA-GG biçiminde verir (kayıt anahtarı olarak kullanılır).
   function tarihAnahtari(tarih) {
-    var t = tarih || new Date();
-    var ay = String(t.getMonth() + 1).padStart(2, '0');
-    var gun = String(t.getDate()).padStart(2, '0');
-    return t.getFullYear() + '-' + ay + '-' + gun;
+    var tr = trTarih(tarih);
+    var ay = String(tr.getUTCMonth() + 1).padStart(2, '0');
+    var gun = String(tr.getUTCDate()).padStart(2, '0');
+    return tr.getUTCFullYear() + '-' + ay + '-' + gun;
   }
 
-  // Bir sonraki bulmacaya kalan milisaniye.
+  // Bir sonraki bulmacaya (Türkiye'de gece yarısına) kalan milisaniye.
   function sonrakiBulmacayaKalan(tarih) {
     var t = tarih || new Date();
-    var yarin = new Date(t.getFullYear(), t.getMonth(), t.getDate() + 1, 0, 0, 0, 0);
-    return yarin.getTime() - t.getTime();
+    var tr = trTarih(t);
+    var yarinTr = Date.UTC(tr.getUTCFullYear(), tr.getUTCMonth(), tr.getUTCDate() + 1, 0, 0, 0, 0);
+    return (yarinTr - TR_OFISET_DK * 60000) - t.getTime();
   }
 
   // Havuzu seviyeye göre bir kez karıştırıp sırayla dolaşırız: böylece kelimeler
@@ -2653,16 +2669,33 @@ select {
 
   // ------------------------------------------------------------ Tema
 
-  function temaUygula() {
-    var tema = ayarlar.tema;
-    if (tema === 'sistem') {
-      tema = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'acik' : 'koyu';
+  // Ayarlardaki tema tercihinin o an ekranda gösterilen karşılığı.
+  function etkinTema() {
+    if (ayarlar.tema === 'sistem') {
+      return (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'acik' : 'koyu';
     }
+    return ayarlar.tema;
+  }
+
+  function temaUygula() {
+    var tema = etkinTema();
     document.documentElement.dataset.tema = tema;
     document.documentElement.dataset.kontrast = ayarlar.yuksekKontrast ? 'acik' : 'kapali';
     var renk = document.querySelector('meta[name="theme-color"]');
     if (renk) renk.setAttribute('content', tema === 'koyu' ? '#141414' : '#eceef1');
+    // Üst bardaki düğme, tıklanınca geçilecek modun simgesini gösterir.
+    var simge = $('#tema-simge');
+    if (simge) simge.textContent = tema === 'koyu' ? '☀️' : '🌙';
     $('#klavye').classList.toggle('gizli', !ayarlar.klavyeAcik);
+  }
+
+  // Üst bar düğmesi: aydınlık ile karanlık arasında geçiş yapar.
+  function temaDegistir() {
+    var yeni = etkinTema() === 'koyu' ? 'acik' : 'koyu';
+    ayarlar = Depo.ayarKaydet('tema', yeni);
+    temaUygula();
+    var secim = $('#ayar-tema');
+    if (secim) secim.value = yeni; // ayarlar açıksa senkron kalsın
   }
 
   // ------------------------------------------------------------ Olaylar
@@ -2742,6 +2775,8 @@ select {
     $('#dugme-seviye').addEventListener('click', function () { kutuAc('perde-seviye'); });
     $('#dugme-mod').addEventListener('click', function () { kutuAc('perde-mod'); });
     $('#dugme-istatistik').addEventListener('click', istatistikGoster);
+    $('#dugme-tema').addEventListener('click', temaDegistir);
+    $('#dugme-liderlik').addEventListener('click', liderlikAc);
     $('#dugme-yardim').addEventListener('click', function () { kutuAc('perde-yardim'); });
     $('#dugme-ayarlar').addEventListener('click', function () {
       $('#ayar-tema').value = ayarlar.tema;
@@ -2784,7 +2819,6 @@ select {
       aramaYap();
       kutuAc('perde-arama');
     });
-    $('#dugme-liderlik').addEventListener('click', liderlikAc);
 
     // Kutu kapatma
     hepsi('.perde').forEach(function (perde) {
