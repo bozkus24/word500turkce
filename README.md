@@ -1,7 +1,7 @@
 # word500tr — Türkçe kelime bulmacası
 
 Gizli **5 harfli Türkçe kelimeyi 8 tahminde** bulmaya çalıştığınız bir kelime
-oyunu. [word500.com](https://word500.com/) oyununun Türkçe uyarlamasıdır.
+oyunu.
 
 **Wordle'dan farkı:** Hangi harfin doğru olduğu size söylenmez — yalnızca *kaç
 tanesinin* doğru olduğu söylenir. Hangileri olduğunu tahminleri karşılaştırarak
