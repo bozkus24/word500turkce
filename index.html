@@ -719,6 +719,71 @@ select {
 
 :focus-visible { outline: 2px solid var(--yesil); outline-offset: 2px; }
 
+/* --------------------------------------------------------- Karşılama */
+
+.karsilama {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem calc(1.5rem + env(safe-area-inset-right)) 1.5rem calc(1.5rem + env(safe-area-inset-left));
+  background: var(--zemin);
+  text-align: center;
+  animation: acil .2s ease;
+}
+.karsilama[hidden] { display: none; }
+
+.karsilama-ic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  max-width: 26rem;
+}
+.karsilama .logo-kutulari.buyuk { gap: 4px; margin-bottom: 1.1rem; }
+.karsilama .logo-kutulari.buyuk .lk { width: 44px; height: 44px; border-radius: 9px; font-size: 27px; }
+
+.karsilama-baslik { margin: 0; font-size: 2.1rem; font-weight: 800; letter-spacing: .06em; }
+.karsilama-baslik span { color: var(--yesil); }
+.karsilama-slogan { margin: .6rem 0 0; font-size: 1.02rem; }
+.karsilama-aciklama { margin: .4rem 0 1.5rem; font-size: .9rem; color: var(--yazi-soluk); line-height: 1.55; max-width: 23rem; }
+
+.karsilama-oyna {
+  width: 100%;
+  max-width: 16rem;
+  padding: .9rem 1rem;
+  border: 0;
+  border-radius: 10px;
+  background: var(--yesil);
+  color: var(--yesil-yazi);
+  font-size: 1.15rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: filter .12s ease;
+}
+.karsilama-oyna:hover { filter: brightness(1.08); }
+
+.karsilama-yardim {
+  margin-top: .5rem;
+  padding: .5rem;
+  background: transparent;
+  border: 0;
+  color: var(--yazi-soluk);
+  font-size: .85rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.karsilama-yardim:hover { color: var(--yazi); }
+
+.karsilama-bilgi { margin: 1.25rem 0 0; font-size: .8rem; color: var(--yazi-soluk); min-height: 1em; }
+.karsilama-alt { margin-top: 1.5rem; font-size: .78rem; color: var(--yazi-soluk); }
+.karsilama-alt a { color: var(--yazi-soluk); }
+.karsilama-alt a:hover { color: var(--yesil); }
+
 /* ------------------------------------------------------------ Duyarlılık */
 
 @media (max-width: 420px) {
@@ -747,6 +812,29 @@ select {
 </style>
 </head>
 <body>
+
+<!-- ---------------------------------------------------------- Karşılama -->
+<div class="karsilama" id="karsilama">
+  <div class="karsilama-ic">
+    <span class="logo-kutulari buyuk" aria-hidden="true">
+      <b class="lk lk-beyaz">W</b><b class="lk lk-yesil">5</b>
+      <b class="lk lk-sari">O</b><b class="lk lk-kirmizi">0</b>
+    </span>
+    <h1 class="karsilama-baslik">WORD500<span>TR</span></h1>
+    <p class="karsilama-slogan">Gizli 5 harfli Türkçe kelimeyi 8 tahminde bul.</p>
+    <p class="karsilama-aciklama">
+      Wordle'dan farkı: hangi harfin doğru olduğu değil,
+      <strong>kaç tanesinin</strong> doğru olduğu söylenir.
+    </p>
+    <button class="karsilama-oyna" id="dugme-oyna" type="button">Oyna</button>
+    <button class="karsilama-yardim" id="dugme-karsilama-yardim" type="button">Nasıl oynanır?</button>
+    <p class="karsilama-bilgi" id="karsilama-bilgi"></p>
+    <div class="karsilama-alt">
+      <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik</a> ·
+      <a href="kosullar.html" target="_blank" rel="noopener">Koşullar</a>
+    </div>
+  </div>
+</div>
 
 <div class="uygulama">
 
@@ -1790,8 +1878,17 @@ select {
     liderlikKur();
     oyunKur('gunluk', ayarlar.seviye);
 
-    // İlk ziyarette yardım kutusunu aç. (localStorage erişimi bazı gizlilik
-    // ayarlarında hata fırlatabilir; Depo bunu kendi içinde ele alıyor.)
+    // Karşılama ekranındaki günün bulmaca numarası.
+    var bilgi = $('#karsilama-bilgi');
+    if (bilgi) bilgi.textContent = 'Bugünün bulmacası · #' + K.bulmacaNo();
+  }
+
+  // Karşılama ekranından oyuna geçiş.
+  function oyunaBasla() {
+    var k = $('#karsilama');
+    if (!k || k.hidden) return;
+    k.hidden = true;
+    // İlk ziyarette, oyuna girer girmez yardım kutusunu bir kez aç.
     if (!Depo.oku('karsilandi', false)) {
       kutuAc('perde-yardim');
       Depo.yaz('karsilandi', true);
@@ -2789,6 +2886,13 @@ select {
     $('#dugme-tema').addEventListener('click', temaDegistir);
     $('#dugme-liderlik').addEventListener('click', liderlikAc);
     $('#dugme-yardim').addEventListener('click', function () { kutuAc('perde-yardim'); });
+
+    // Karşılama ekranı
+    $('#dugme-oyna').addEventListener('click', oyunaBasla);
+    $('#dugme-karsilama-yardim').addEventListener('click', function () {
+      oyunaBasla();
+      kutuAc('perde-yardim');
+    });
     $('#dugme-ayarlar').addEventListener('click', function () {
       $('#ayar-tema').value = ayarlar.tema;
       $('#ayar-kontrast').checked = ayarlar.yuksekKontrast;
