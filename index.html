@@ -227,6 +227,8 @@ button { font: inherit; color: inherit; }
 .kutucuk.dolu { background: var(--kutucuk-dolu); animation: buyu .12s ease; }
 .kutucuk.tiklanabilir { cursor: pointer; }
 .kutucuk.tiklanabilir:hover { outline: 2px solid var(--yazi-soluk); outline-offset: -2px; }
+/* Kesin renge kilitlenmiş kutu: elle boyanamaz, soluklaşmaz. */
+.kutucuk.kilitli { cursor: default; opacity: 1; }
 
 /* Oyuncunun kendi işaretleri */
 .kutucuk[data-boya="kirmizi"] { background: var(--kirmizi); color: var(--kirmizi-yazi); }
@@ -687,6 +689,30 @@ select {
 .liderlik-bos { text-align: center; color: var(--yazi-soluk); font-size: .85rem; padding: 1rem 0; }
 .liderlik-katil { border-top: 1px solid var(--cizgi); margin-top: .5rem; padding-top: .25rem; }
 
+/* -------------------------------------------------------------- Arşiv */
+
+.arsiv-liste { display: flex; flex-direction: column; gap: .3rem; max-height: 22rem; overflow-y: auto; margin-top: .5rem; }
+.arsiv-satiri {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+  border: 1px solid var(--cizgi);
+  background: var(--zemin);
+  color: var(--yazi);
+  border-radius: 8px;
+  padding: .55rem .7rem;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+.arsiv-satiri:hover { border-color: var(--yesil); }
+.arsiv-satiri .arsiv-no { color: var(--yazi-soluk); font-variant-numeric: tabular-nums; }
+.arsiv-satiri .arsiv-tarih { flex: 1 1 auto; }
+.arsiv-satiri.cozuldu { border-color: var(--yesil); }
+.arsiv-satiri .arsiv-tik { color: var(--yesil); font-weight: 800; }
+
 /* -------------------------------------------------------- Kelime arama */
 
 .alan { display: block; margin: .75rem 0; }
@@ -858,6 +884,9 @@ select {
       </button>
       <button class="karsilama-oyna ikincil" id="dugme-alistirma" type="button">
         <span aria-hidden="true">🔄</span> Alıştırma
+      </button>
+      <button class="karsilama-oyna ikincil" id="dugme-arsiv" type="button">
+        <span aria-hidden="true">🗓️</span> Arşiv
       </button>
     </div>
     <p class="karsilama-mod-not">Günlük: herkese aynı kelime · Alıştırma: sınırsız, istatistiğe işlenmez</p>
@@ -1208,6 +1237,19 @@ select {
   </div>
 </div>
 
+<!-- ------------------------------------------------------------- Arşiv -->
+<div class="perde" id="perde-arsiv" hidden>
+  <div class="kutu" role="dialog" aria-modal="true" aria-labelledby="baslik-arsiv">
+    <button class="kapat" type="button" data-kapat aria-label="Kapat">×</button>
+    <h2 id="baslik-arsiv">🗓️ Arşiv</h2>
+    <p class="kucuk">
+      Önceki günlerin bulmacaları — zorluk: <b id="arsiv-seviye"></b>.
+      Arşiv oyunları istatistiğe ve seriye işlenmez.
+    </p>
+    <div class="arsiv-liste" id="arsiv-liste"></div>
+  </div>
+</div>
+
 <script>
 // Bu dosya otomatik üretilmiştir. Elle düzenlemeyin.
 // Yeniden üretmek için: python3 araclar/kelime-listesi-olustur.py
@@ -1458,6 +1500,29 @@ select {
     return { yesil: yesil, sari: sari, kirmizi: HARF_SAYISI - yesil - sari };
   }
 
+  // Her harfin gerçek rengi (oyun bitince açığa çıkarmak için): doğru yerde
+  // 'yesil', kelimede var ama yanlış yerde 'sari', kelimede yok 'kirmizi'.
+  // Tekrarlı harfler skorla ile aynı mantıkla ele alınır.
+  function gercekRenkler(tahmin, cevap) {
+    var renk = new Array(HARF_SAYISI);
+    var kalanCevap = {};
+    for (var i = 0; i < HARF_SAYISI; i++) {
+      if (tahmin[i] === cevap[i]) {
+        renk[i] = 'yesil';
+      } else {
+        renk[i] = null;
+        kalanCevap[cevap[i]] = (kalanCevap[cevap[i]] || 0) + 1;
+      }
+    }
+    for (var j = 0; j < HARF_SAYISI; j++) {
+      if (renk[j]) continue;
+      var harf = tahmin[j];
+      if (kalanCevap[harf] > 0) { kalanCevap[harf]--; renk[j] = 'sari'; }
+      else { renk[j] = 'kirmizi'; }
+    }
+    return renk;
+  }
+
   function skorEsit(a, b) {
     return a.yesil === b.yesil && a.sari === b.sari && a.kirmizi === b.kirmizi;
   }
@@ -1608,6 +1673,7 @@ select {
     gunlukKelime: gunlukKelime,
     rastgeleKelime: rastgeleKelime,
     skorla: skorla,
+    gercekRenkler: gercekRenkler,
     skorEsit: skorEsit,
     tutarliMi: tutarliMi,
     olasiKelimeler: olasiKelimeler,
@@ -1770,6 +1836,22 @@ select {
     return bosIstatistik();
   }
 
+  // Arşivde çözülen bulmaca numaraları (seviyeye göre) — istatistiği etkilemez,
+  // yalnızca arşiv listesinde ✓ göstermek için tutulur.
+  function arsivCozulenAl(seviye) {
+    var liste = oku('arsiv.' + seviye, []);
+    return Array.isArray(liste) ? liste : [];
+  }
+
+  function arsivCozulenEkle(seviye, bulmacaNo) {
+    var liste = arsivCozulenAl(seviye);
+    if (liste.indexOf(bulmacaNo) === -1) {
+      liste.push(bulmacaNo);
+      yaz('arsiv.' + seviye, liste);
+    }
+    return liste;
+  }
+
   // Bulut senkronu için: verilen seviyelerin istatistiklerini tek nesnede toplar.
   function tumIstatistikleriAl(seviyeler) {
     var sonuc = {};
@@ -1837,6 +1919,8 @@ select {
     istatistikSifirla: istatistikSifirla,
     tumIstatistikleriAl: tumIstatistikleriAl,
     istatistikYaz: istatistikYaz,
+    arsivCozulenAl: arsivCozulenAl,
+    arsivCozulenEkle: arsivCozulenEkle,
     oyunAl: oyunAl,
     oyunKaydet: oyunKaydet
   };
@@ -1906,10 +1990,73 @@ select {
     if (k) k.hidden = false;
   }
 
+  // ------------------------------------------------------------- Arşiv
+
+  // Bulmaca numarasından o güne ait tarihi üretir (Türkiye saatiyle güvenli:
+  // öğle vakti seçilir ki gün kayması olmasın).
+  function nodanTarih(no) {
+    var basUTC = Date.UTC(K.BASLANGIC.yil, K.BASLANGIC.ay - 1, K.BASLANGIC.gun, 12, 0, 0);
+    return new Date(basUTC + (no - 1) * 86400000);
+  }
+
+  function arsivAc() {
+    var seviye = durum ? durum.seviye : ayarlar.seviye;
+    var bilgi = K.SEVIYE_BILGISI[seviye];
+    $('#arsiv-seviye').textContent = bilgi.simge + ' ' + bilgi.ad;
+
+    var bugunNo = K.bulmacaNo();
+    var cozulen = Depo.arsivCozulenAl(seviye);
+    var kap = $('#arsiv-liste');
+    kap.innerHTML = '';
+
+    if (bugunNo <= 1) {
+      kap.innerHTML = '<p class="liderlik-bos">Henüz geçmiş bulmaca yok.</p>';
+    } else {
+      // Dünden geriye ilk bulmacaya kadar.
+      for (var no = bugunNo - 1; no >= 1; no--) {
+        var tarih = nodanTarih(no);
+        var satir = document.createElement('button');
+        satir.type = 'button';
+        satir.className = 'arsiv-satiri' + (cozulen.indexOf(no) !== -1 ? ' cozuldu' : '');
+        satir.dataset.no = no;
+
+        var noEt = document.createElement('span');
+        noEt.className = 'arsiv-no';
+        noEt.textContent = '#' + no;
+
+        var tarihEt = document.createElement('span');
+        tarihEt.className = 'arsiv-tarih';
+        try {
+          tarihEt.textContent = tarih.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+        } catch (e) { tarihEt.textContent = ''; }
+
+        satir.appendChild(noEt);
+        satir.appendChild(tarihEt);
+        if (cozulen.indexOf(no) !== -1) {
+          var tik = document.createElement('span');
+          tik.className = 'arsiv-tik';
+          tik.textContent = '✓';
+          satir.appendChild(tik);
+        }
+        kap.appendChild(satir);
+      }
+    }
+    kutuAc('perde-arsiv');
+  }
+
+  function arsivOyunuAc(no) {
+    var seviye = durum ? durum.seviye : ayarlar.seviye;
+    oyunKur('arsiv', seviye, nodanTarih(Number(no)));
+    kutuKapat('perde-arsiv');
+    var k = $('#karsilama');
+    if (k) k.hidden = true;
+  }
+
   // ------------------------------------------------------------ Oyun kurma
 
-  function oyunKur(mod, seviye) {
-    var tarih = new Date();
+  function oyunKur(mod, seviye, arsivTarih) {
+    // Arşivde geçmiş bir günün tarihi kullanılır; diğer modlarda bugün.
+    var tarih = (mod === 'arsiv' && arsivTarih) ? arsivTarih : new Date();
     var anahtar = K.tarihAnahtari(tarih);
     var yeni = {
       mod: mod,
@@ -1938,11 +2085,15 @@ select {
         yeni.kazandi = !!kayit.kazandi;
         yeni.ipucuSayisi = kayit.ipucuSayisi || 0;
       }
+    } else if (mod === 'arsiv') {
+      // O güne ait günlük kelime; arşiv oyunları kaydedilmez, istatistiğe işlenmez.
+      yeni.kelime = K.gunlukKelime(Veri, seviye, tarih);
     } else {
       yeni.kelime = K.rastgeleKelime(Veri, seviye);
     }
 
     durum = yeni;
+    kesinleriGuncelle();
     modGoster();
     seviyeGoster();
     tahtaCiz();
@@ -1965,20 +2116,53 @@ select {
     return temiz;
   }
 
+  function tekRenk(renk) {
+    var d = [];
+    for (var i = 0; i < K.HARF_SAYISI; i++) d.push(renk);
+    return d;
+  }
+
+  // Kesin (otomatik, silinemez) renkler:
+  //  - Oyun bittiyse her satırın gerçek renkleri açığa çıkar.
+  //  - Oyun sürerken yalnızca 5 kırmızı satır (harflerin hiçbiri kelimede yok)
+  //    kesindir; oradaki tüm kutular kırmızıya kilitlenir.
+  // Kesin renkler oyuncunun elle boyamasından bağımsızdır ve silgi onları silmez.
+  function kesinleriGuncelle() {
+    durum.gecmis.forEach(function (adim) {
+      if (durum.bitti) {
+        adim.kesin = K.gercekRenkler(adim.kelime, durum.kelime);
+      } else if (adim.skor.kirmizi === K.HARF_SAYISI) {
+        adim.kesin = tekRenk('kirmizi');
+      } else if (!adim.kesin) {
+        adim.kesin = bosBoya();
+      }
+    });
+  }
+
   function kaydet() {
     if (durum.mod === 'gunluk') Depo.oyunKaydet(durum.seviye, durum.tarih, durum);
   }
 
   function bilgiyiGuncelle() {
     var bilgi = K.SEVIYE_BILGISI[durum.seviye];
-    $('#bulmaca-bilgi').textContent = durum.mod === 'gunluk'
-      ? 'Bulmaca #' + durum.bulmacaNo + ' · ' + bilgi.ad + ' · ' + tarihYazisi()
-      : 'Alıştırma · ' + bilgi.ad + ' · istatistiklere işlenmez';
+    var metin;
+    if (durum.mod === 'gunluk') {
+      metin = 'Bulmaca #' + durum.bulmacaNo + ' · ' + bilgi.ad + ' · ' + tarihYazisi();
+    } else if (durum.mod === 'arsiv') {
+      metin = 'Arşiv · #' + durum.bulmacaNo + ' · ' + bilgi.ad + ' · ' + tarihYazisi();
+    } else {
+      metin = 'Alıştırma · ' + bilgi.ad + ' · istatistiklere işlenmez';
+    }
+    $('#bulmaca-bilgi').textContent = metin;
   }
 
+  // durum.tarih (YYYY-AA-GG) biçimini okunur tarihe çevirir; arşivde geçmiş
+  // günü de doğru gösterir.
   function tarihYazisi() {
     try {
-      return new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+      var p = durum.tarih.split('-');
+      return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]))
+        .toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
     } catch (hata) {
       return durum.tarih;
     }
@@ -2004,9 +2188,14 @@ select {
     var aktifSatir = !durum.bitti && satirNo === durum.gecmis.length;
     var kelime = gecmis ? gecmis.kelime : (aktifSatir ? durum.aktif : '');
     var boya = gecmis ? gecmis.boya : (aktifSatir ? durum.aktifBoya : bosBoya());
+    var kesin = (gecmis && gecmis.kesin) ? gecmis.kesin : bosBoya();
 
     for (var i = 0; i < K.HARF_SAYISI; i++) {
-      satir.appendChild(kutucukYap(kelime[i], boya[i], satirNo, i));
+      // Kesin (otomatik) renk varsa onu göster ve kutuyu kilitle; yoksa oyuncunun
+      // elle koyduğu işaret gösterilir.
+      var kilitli = !!kesin[i];
+      var renk = kilitli ? kesin[i] : boya[i];
+      satir.appendChild(kutucukYap(kelime[i], renk, satirNo, i, kilitli));
     }
 
     if (gecmis) {
@@ -2026,7 +2215,7 @@ select {
 
   // Dolu kutucuklar tıklanabilir olmalı (oyuncunun kendi işaretleri), bu yüzden
   // gerçek düğme; boş olanlar sadece kutu.
-  function kutucukYap(harf, boya, satirNo, sutunNo) {
+  function kutucukYap(harf, boya, satirNo, sutunNo, kilitli) {
     var kutucuk = document.createElement(harf ? 'button' : 'div');
     kutucuk.className = 'kutucuk';
     kutucuk.setAttribute('role', 'gridcell');
@@ -2034,12 +2223,19 @@ select {
     if (harf) {
       kutucuk.type = 'button';
       kutucuk.textContent = K.buyut(harf);
-      kutucuk.classList.add('dolu', 'tiklanabilir');
+      kutucuk.classList.add('dolu');
       kutucuk.dataset.satir = satirNo;
       kutucuk.dataset.sutun = sutunNo;
       if (boya) kutucuk.dataset.boya = boya;
       kutucuk.setAttribute('aria-label', boyaEtiketi(harf, boya));
-      kutucuk.title = 'İşaretlemek için tıklayın';
+      // Kesin renkli (kilitli) kutular elle boyanamaz; tıklama ipucu gösterilmez.
+      if (kilitli) {
+        kutucuk.disabled = true;
+        kutucuk.classList.add('kilitli');
+      } else {
+        kutucuk.classList.add('tiklanabilir');
+        kutucuk.title = 'İşaretlemek için tıklayın';
+      }
     }
     return kutucuk;
   }
@@ -2073,7 +2269,10 @@ select {
   function boyaDegistir(satirNo, sutunNo) {
     var hedefBoya;
     if (satirNo < durum.gecmis.length) {
-      hedefBoya = durum.gecmis[satirNo].boya;
+      // Kesin (otomatik) renkli kutular elle değiştirilemez.
+      var adim = durum.gecmis[satirNo];
+      if (adim.kesin && adim.kesin[sutunNo]) return;
+      hedefBoya = adim.boya;
     } else if (!durum.bitti && satirNo === durum.gecmis.length) {
       hedefBoya = durum.aktifBoya;
     } else {
@@ -2190,8 +2389,17 @@ select {
   // tıklayarak koyduğu renk işaretlerini sıfırlar.
   function satiriTemizle() {
     if (kilit) return;
+    // Yalnızca oyuncunun elle koyduğu (kesin olmayan) işaretler silinir;
+    // kesin renkler (5 kırmızı, oyun bitişi) korunur.
+    function elleBoyaliMi(adim) {
+      if (!adim.boya) return false;
+      for (var i = 0; i < K.HARF_SAYISI; i++) {
+        if (adim.boya[i] && !(adim.kesin && adim.kesin[i])) return true;
+      }
+      return false;
+    }
     var boyaVarMi = (durum.aktifBoya && durum.aktifBoya.some(Boolean)) ||
-      durum.gecmis.some(function (a) { return a.boya && a.boya.some(Boolean); });
+      durum.gecmis.some(elleBoyaliMi);
     if (!durum.aktif.length && !boyaVarMi) return; // temizlenecek bir şey yok
 
     durum.aktif = '';
@@ -2231,31 +2439,28 @@ select {
     }
 
     var skor = K.skorla(tahmin, durum.kelime);
+    var kazandi = skor.yesil === K.HARF_SAYISI;
 
-    // Kesin durumlar oyuncu için otomatik boyanır (elle seçmenin anlamı yok):
-    // 5 yeşil -> hepsi doğru yerde; 5 kırmızı -> harflerin hiçbiri kelimede yok.
-    var otomatik = null;
-    var boya = durum.aktifBoya;
-    if (skor.yesil === K.HARF_SAYISI) { otomatik = 'yesil'; }
-    else if (skor.kirmizi === K.HARF_SAYISI) { otomatik = 'kirmizi'; }
-    if (otomatik) {
-      boya = [];
-      for (var bi = 0; bi < K.HARF_SAYISI; bi++) boya.push(otomatik);
-    }
-
-    durum.gecmis.push({ kelime: tahmin, skor: skor, boya: boya });
+    // Manuel boya oyuncuya aittir; kesin (otomatik) renkler kesinleriGuncelle ile
+    // atanır ve silgiden etkilenmez.
+    durum.gecmis.push({ kelime: tahmin, skor: skor, boya: durum.aktifBoya, kesin: bosBoya() });
     durum.aktif = '';
     durum.aktifBoya = bosBoya();
 
-    var kazandi = skor.yesil === K.HARF_SAYISI;
     durum.kazandi = kazandi;
     durum.bitti = kazandi || durum.gecmis.length >= K.TAHMIN_HAKKI;
+
+    // Oyun bittiyse tüm satırların gerçek renkleri açığa çıkar; sürerken 5 kırmızı
+    // satır kırmızıya kilitlenir.
+    kesinleriGuncelle();
+
+    // Son satır dönerek gelsin: kazanma, 5 kırmızı veya oyun bitişi durumlarında.
+    var donsun = kazandi || skor.kirmizi === K.HARF_SAYISI || durum.bitti;
 
     tahtaCiz();
     var sonSatir = $('#tahta').children[durum.gecmis.length - 1];
     sonSatir.classList.add('yeni');
-    // Otomatik boyanan satırdaki kutular dönerek (renkleriyle) gelsin.
-    if (otomatik) sonSatir.classList.add('otomatik');
+    if (donsun) sonSatir.classList.add('otomatik');
     klavyeDurumuGuncelle();
     araclariGuncelle();
     kaydet();
@@ -2264,6 +2469,8 @@ select {
       if (durum.mod === 'gunluk') {
         Depo.sonucKaydet(durum.seviye, durum.bulmacaNo, kazandi, durum.gecmis.length);
         hesabaGonder();
+      } else if (durum.mod === 'arsiv' && kazandi) {
+        Depo.arsivCozulenEkle(durum.seviye, durum.bulmacaNo);
       }
       // Kutular dönmesini bitirmeden ne zafer animasyonu ne de sonuç kutusu gelsin.
       var bekleme = cevirmeSuresi();
@@ -2301,17 +2508,22 @@ select {
   // ------------------------------------------------------------ Araçlar
 
   function araclariGuncelle() {
+    // İpucu ve kelime arama yalnızca alıştırma modunda; günlük ve arşiv
+    // bulmacalarında herkes eşit koşullarda oynasın diye kapalıdır.
+    var alistirma = durum.mod === 'alistirma';
     var ipucuTusu = $('#tus-ipucu');
-    if (ipucuTusu) ipucuTusu.disabled = durum.bitti || durum.gecmis.length === 0;
-    // Kelime arama günlük bulmacada avantaj sağlar (herkes aynı kelimeyi
-    // çözüyor); yalnızca alıştırma modunda gösteriliyor.
-    $('#dugme-arama').classList.toggle('gizli', durum.mod !== 'alistirma');
-    $('#dugme-yeni').classList.toggle('gizli', durum.mod !== 'alistirma');
+    if (ipucuTusu) {
+      ipucuTusu.classList.toggle('gizli', !alistirma);
+      ipucuTusu.disabled = durum.bitti || durum.gecmis.length === 0;
+    }
+    $('#dugme-arama').classList.toggle('gizli', !alistirma);
+    $('#dugme-yeni').classList.toggle('gizli', !alistirma);
     $('#dugme-paylas').classList.toggle('gizli', !durum.bitti);
   }
 
   function ipucuVer() {
     if (durum.bitti) return;
+    if (durum.mod !== 'alistirma') return; // ipucu yalnızca alıştırmada
     if (!durum.gecmis.length) {
       bildir('İpucu için önce bir tahmin yapın');
       return;
@@ -2927,7 +3139,14 @@ select {
     // Karşılama menüsü
     $('#dugme-gunluk').addEventListener('click', function () { oyunaBasla('gunluk'); });
     $('#dugme-alistirma').addEventListener('click', function () { oyunaBasla('alistirma'); });
+    $('#dugme-arsiv').addEventListener('click', arsivAc);
     $('#dugme-karsilama-yardim').addEventListener('click', function () { kutuAc('perde-yardim'); });
+
+    // Arşiv listesinden bir güne tıklayınca o bulmacayı aç.
+    $('#arsiv-liste').addEventListener('click', function (olay) {
+      var satir = olay.target.closest('.arsiv-satiri');
+      if (satir) arsivOyunuAc(satir.dataset.no);
+    });
     $('#dugme-ayarlar').addEventListener('click', function () {
       $('#ayar-tema').value = ayarlar.tema;
       $('#ayar-kontrast').checked = ayarlar.yuksekKontrast;
