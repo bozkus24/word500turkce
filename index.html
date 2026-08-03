@@ -78,6 +78,12 @@ body {
 
 button { font: inherit; color: inherit; }
 
+/* Emoji yerine kullanılan satır içi SVG ikonlar. */
+.ikon { width: 1.15em; height: 1.15em; display: inline-block; vertical-align: -0.18em; flex: 0 0 auto; }
+/* Yalnızca sarmalayıcı span içindeki svg tam doldurur; kendi başına duran
+   svg.ikon ise .ikon boyutunu (1.15em) kullanır. */
+.ikon svg { display: block; width: 100%; height: 100%; }
+
 /* ------------------------------------------------------------ Yerleşim */
 
 /* Oyun alanının ölçüleri bilerek `px` cinsinden: sayfa gömüldüğü yerin kök yazı
@@ -172,9 +178,10 @@ button { font: inherit; color: inherit; }
 .ust-dugme:hover { background: var(--tus-vurgu); }
 
 /* Zorluk düğmesi seviyenin rengini taşır. */
-.ust-dugme[data-seviye="kolay"] { background: var(--yesil); border-color: var(--yesil); }
-.ust-dugme[data-seviye="standart"] { background: var(--sari); border-color: var(--sari); }
-.ust-dugme[data-seviye="zor"] { background: var(--kirmizi); border-color: var(--kirmizi); }
+.ust-dugme[data-seviye="kolay"] { background: var(--yesil); border-color: var(--yesil); color: var(--yesil-yazi); }
+.ust-dugme[data-seviye="standart"] { background: var(--sari); border-color: var(--sari); color: var(--sari-yazi); }
+.ust-dugme[data-seviye="zor"] { background: var(--kirmizi); border-color: var(--kirmizi); color: var(--kirmizi-yazi); }
+.ust-dugme .ikon { width: 19px; height: 19px; }
 
 /* --------------------------------------------------------------- Tahta */
 
@@ -364,7 +371,8 @@ button { font: inherit; color: inherit; }
 }
 /* Gönder ve temizle tuşlarında karakter yerine SVG kullanılır: her cihazda ortalanır. */
 .tus.onay svg { display: block; width: 24px; height: 24px; }
-.tus.temizle svg { display: block; width: 22px; height: 22px; }
+.tus svg { display: block; width: 24px; height: 24px; }
+.tus.temizle svg { width: 22px; height: 22px; }
 /* Temizle (silgi) tuşu, harf tuşlarından bir tık farklı zeminle dikkat çeker. */
 .tus.temizle { background: var(--tus-vurgu); }
 .tus.temizle:hover { background: var(--yazi-soluk); color: var(--zemin); }
@@ -882,13 +890,13 @@ select {
     </p>
     <div class="karsilama-menu">
       <button class="karsilama-oyna" id="dugme-gunluk" type="button">
-        <span aria-hidden="true">📅</span> Günlük oyun
+        <span class="ikon" data-ikon="gunluk" aria-hidden="true"></span> Günlük oyun
       </button>
       <button class="karsilama-oyna ikincil" id="dugme-alistirma" type="button">
-        <span aria-hidden="true">🔄</span> Alıştırma
+        <span class="ikon" data-ikon="alistirma" aria-hidden="true"></span> Alıştırma
       </button>
       <button class="karsilama-oyna ikincil" id="dugme-arsiv" type="button">
-        <span aria-hidden="true">🗓️</span> Arşiv
+        <span class="ikon" data-ikon="arsiv" aria-hidden="true"></span> Arşiv
       </button>
     </div>
     <p class="karsilama-mod-not">Günlük: herkese aynı kelime · Alıştırma: sınırsız, istatistiğe işlenmez</p>
@@ -914,19 +922,19 @@ select {
 
     <div class="ustbar-dugmeler">
       <button class="ust-dugme" id="dugme-seviye" type="button" aria-label="Zorluk seviyesi" title="Zorluk seviyesi">
-        <span id="seviye-simge" aria-hidden="true">😐</span>
+        <span id="seviye-simge" aria-hidden="true"></span>
       </button>
       <button class="ust-dugme gizli" id="dugme-liderlik" type="button" aria-label="Liderlik tablosu" title="Liderlik tablosu">
-        <span aria-hidden="true">🏆</span>
+        <span class="ikon" data-ikon="liderlik" aria-hidden="true"></span>
       </button>
       <button class="ust-dugme" id="dugme-istatistik" type="button" aria-label="İstatistikler" title="İstatistikler">
-        <span aria-hidden="true">📊</span>
+        <span class="ikon" data-ikon="istatistik" aria-hidden="true"></span>
       </button>
       <button class="ust-dugme" id="dugme-tema" type="button" aria-label="Aydınlık / karanlık mod" title="Aydınlık / karanlık mod">
-        <span id="tema-simge" aria-hidden="true">🌙</span>
+        <span id="tema-simge" aria-hidden="true"></span>
       </button>
       <button class="ust-dugme" id="dugme-ayarlar" type="button" aria-label="Ayarlar" title="Ayarlar">
-        <span aria-hidden="true">⚙️</span>
+        <span class="ikon" data-ikon="ayarlar" aria-hidden="true"></span>
       </button>
     </div>
   </header>
@@ -938,13 +946,13 @@ select {
 
   <div class="arac-seridi">
     <button class="arac" id="dugme-arama" type="button">
-      <span aria-hidden="true">🔍</span> Kelime ara
+      <span class="ikon" data-ikon="ara" aria-hidden="true"></span> Kelime ara
     </button>
     <button class="arac gizli" id="dugme-yeni" type="button">
-      <span aria-hidden="true">🔄</span> Yeni kelime
+      <span class="ikon" data-ikon="alistirma" aria-hidden="true"></span> Yeni kelime
     </button>
     <button class="arac vurgulu gizli" id="dugme-paylas" type="button">
-      <span aria-hidden="true">📋</span> Sonucu paylaş
+      <span class="ikon" data-ikon="paylas" aria-hidden="true"></span> Sonucu paylaş
     </button>
   </div>
 
@@ -1013,17 +1021,17 @@ select {
 
     <h3>Zorluk seviyeleri</h3>
     <ul class="anahtar-liste">
-      <li><strong>🙂 Kolay</strong> — sık kullanılan kelimeler. Aynı harf iki kez geçmez; j, f, v, ğ kullanılmaz.</li>
-      <li><strong>😐 Standart</strong> — daha geniş havuz. Aynı harf iki kez geçmez; j ve f kullanılmaz.</li>
-      <li><strong>😈 Zor</strong> — tüm havuz. Harfler tekrar edebilir, bütün harfler kullanılabilir.</li>
+      <li><strong>Kolay</strong> — sık kullanılan kelimeler. Aynı harf iki kez geçmez; j, f, v, ğ kullanılmaz.</li>
+      <li><strong>Standart</strong> — daha geniş havuz. Aynı harf iki kez geçmez; j ve f kullanılmaz.</li>
+      <li><strong>Zor</strong> — tüm havuz. Harfler tekrar edebilir, bütün harfler kullanılabilir.</li>
     </ul>
 
     <h3>Klavye ve yardımcılar</h3>
     <ul class="anahtar-liste">
       <li><strong>BOŞLUK</strong> — bilmediğiniz harfin yerine <code>_</code> koyar: <code>K_L_M</code>. Böylece aklınızdaki deseni tahta üzerinde görebilirsiniz.</li>
-      <li><strong>💡</strong> — şimdiye kadarki bütün ipuçlarına uyan bir kelime önerir ve kaç kelimenin hâlâ mümkün olduğunu söyler. En az bir tahmin yapmış olmanız gerekir.</li>
-      <li><strong>🧽 (silgi)</strong> — yazmakta olduğunuz satırı ve kutulara tıklayarak koyduğunuz renk işaretlerini temizler.</li>
-      <li><strong>🔍 Kelime ara</strong> — desene göre kelime arar; <code>_</code> herhangi bir harf demektir. Yalnızca <strong>Alıştırma</strong> modunda vardır; günlük bulmacada herkes eşit koşullarda oynasın diye kapalıdır.</li>
+      <li><span class="ikon" data-ikon="ipucu" aria-hidden="true"></span> <strong>İpucu</strong> — şimdiye kadarki bütün ipuçlarına uyan bir kelime önerir ve kaç kelimenin hâlâ mümkün olduğunu söyler. En az bir tahmin yapmış olmanız gerekir. (Yalnızca Alıştırma modunda.)</li>
+      <li><span class="ikon" data-ikon="silgi" aria-hidden="true"></span> <strong>Silgi</strong> — yazmakta olduğunuz satırı ve kutulara tıklayarak koyduğunuz renk işaretlerini temizler.</li>
+      <li><span class="ikon" data-ikon="ara" aria-hidden="true"></span> <strong>Kelime ara</strong> — desene göre kelime arar; <code>_</code> herhangi bir harf demektir. Yalnızca <strong>Alıştırma</strong> modunda vardır; günlük bulmacada herkes eşit koşullarda oynasın diye kapalıdır.</li>
       <li>Bir tahmin 5 kırmızı alırsa o harflerin hiçbiri kelimede yoktur; 0 kırmızı alırsa hepsi kelimededir. Oyun bu iki kesin çıkarımı klavyede sizin için işaretler.</li>
     </ul>
 
@@ -1068,7 +1076,7 @@ select {
 
     <div class="kutu-dugmeler">
       <button class="arac vurgulu" id="dugme-paylas-ist" type="button">
-        <span aria-hidden="true">📋</span> Sonucu paylaş
+        <span class="ikon" data-ikon="paylas" aria-hidden="true"></span> Sonucu paylaş
       </button>
       <button class="arac tehlike" id="dugme-sifirla" type="button">İstatistikleri sıfırla</button>
     </div>
@@ -1088,7 +1096,7 @@ select {
           cihazlarınızda senkronlansın.
         </p>
         <button class="arac vurgulu tam-genislik" id="dugme-giris" type="button">
-          <span aria-hidden="true">🔑</span> Google ile giriş yap
+          <span class="ikon" data-ikon="giris" aria-hidden="true"></span> Google ile giriş yap
         </button>
       </div>
       <div class="hesap-kimlik gizli" id="hesap-oturum">
@@ -1137,8 +1145,7 @@ select {
     </div>
 
     <p class="kucuk altbilgi">
-      word500tr — <a href="https://word500.com/" target="_blank" rel="noopener">word500.com</a>
-      oyununun Türkçe uyarlaması. Kelime listeleri açık kaynaklı Türkçe sözlüklerden derlenmiştir.
+      word500tr — Türkçe kelime tahmin oyunu.
     </p>
     <p class="kucuk" style="margin-top: .5rem">
       <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a> ·
@@ -1193,7 +1200,7 @@ select {
     <p class="kucuk" id="sonuc-aciklama"></p>
     <div class="kutu-dugmeler">
       <button class="arac vurgulu" id="dugme-paylas-sonuc" type="button">
-        <span aria-hidden="true">📋</span> Sonucu paylaş
+        <span class="ikon" data-ikon="paylas" aria-hidden="true"></span> Sonucu paylaş
       </button>
       <button class="arac" id="dugme-istatistik-sonuc" type="button">İstatistikler</button>
     </div>
@@ -1208,7 +1215,7 @@ select {
 <div class="perde" id="perde-liderlik" hidden>
   <div class="kutu" role="dialog" aria-modal="true" aria-labelledby="baslik-liderlik">
     <button class="kapat" type="button" data-kapat aria-label="Kapat">×</button>
-    <h2 id="baslik-liderlik">🏆 Liderlik Tablosu</h2>
+    <h2 id="baslik-liderlik"><span class="ikon" data-ikon="liderlik" aria-hidden="true"></span> Liderlik Tablosu</h2>
 
     <div class="liderlik-turler" id="liderlik-turler" role="tablist"></div>
     <p class="kucuk" id="liderlik-aciklama"></p>
@@ -1244,7 +1251,7 @@ select {
 <div class="perde" id="perde-arsiv" hidden>
   <div class="kutu" role="dialog" aria-modal="true" aria-labelledby="baslik-arsiv">
     <button class="kapat" type="button" data-kapat aria-label="Kapat">×</button>
-    <h2 id="baslik-arsiv">🗓️ Arşiv</h2>
+    <h2 id="baslik-arsiv"><span class="ikon" data-ikon="arsiv" aria-hidden="true"></span> Arşiv</h2>
     <p class="kucuk">
       Önceki günlerin bulmacaları — zorluk: <b id="arsiv-seviye"></b>.
       Arşiv oyunları istatistiğe ve seriye işlenmez.
@@ -1316,17 +1323,14 @@ select {
   var SEVIYE_BILGISI = {
     kolay: {
       ad: 'Kolay',
-      simge: '🙂',
       aciklama: 'Sık kullanılan kelimeler. Aynı harf iki kez geçmez; j, f, v ve ğ harfleri kullanılmaz.'
     },
     standart: {
       ad: 'Standart',
-      simge: '😐',
       aciklama: 'Daha geniş kelime havuzu. Aynı harf iki kez geçmez; j ve f harfleri kullanılmaz.'
     },
     zor: {
       ad: 'Zor',
-      simge: '😈',
       aciklama: 'Tüm kelime havuzu. Aynı harf birden fazla geçebilir, bütün harfler kullanılabilir.'
     }
   };
@@ -1975,7 +1979,55 @@ select {
 
   // ------------------------------------------------------------ Başlangıç
 
+  // ------------------------------------------------------------ İkonlar
+  // Emoji yerine kullanılan SVG ikonlar (currentColor ile temaya uyar).
+  function svg(ic, dolu) {
+    var oz = dolu
+      ? 'fill="currentColor" stroke="none"'
+      : 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+    return '<svg class="ikon" viewBox="0 0 24 24" ' + oz + ' aria-hidden="true">' + ic + '</svg>';
+  }
+  var IKON = {
+    gunluk: svg('<rect x="3" y="4.5" width="18" height="17" rx="2"/><path d="M8 2.5v4M16 2.5v4M3 9.5h18"/>'),
+    alistirma: svg('<path d="M21 12a9 9 0 1 1-2.7-6.4"/><path d="M21 3.5v5h-5"/>'),
+    arsiv: svg('<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"/><path d="M10 12h4"/>'),
+    liderlik: svg('<path d="M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 5H4v1a3 3 0 0 0 3 3M17 5h3v1a3 3 0 0 1-3 3"/><path d="M9 20h6M12 15v5"/>'),
+    istatistik: svg('<path d="M4 3v18h18"/><path d="M8 17v-4M13 17V8M18 17v-6"/>'),
+    ayarlar: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-2.7-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.1-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"/>'),
+    ay: svg('<path d="M12 3a6.4 6.4 0 0 0 9 9 9 9 0 1 1-9-9Z"/>', true),
+    gunes: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+    ipucu: svg('<path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.5.4.9 1 1 1.8h6c.1-.8.5-1.4 1-1.8A7 7 0 0 0 12 2Z"/>'),
+    ara: svg('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>'),
+    paylas: svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'),
+    giris: svg('<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/>'),
+    seri: svg('<path d="M12 2c1.2 3 4 4.4 4 8a4 4 0 0 1-8 0c0-1 .3-1.8.8-2.6C7 9 6.5 11 6.5 13a5.5 5.5 0 0 0 11 0c0-4.6-4-6.6-5.5-11Z"/>', true),
+    hiz: svg('<path d="M13 2 4 13h6l-1 9 9-11h-6l1-9Z"/>', true),
+    ortalama: svg('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/>'),
+    silgi: svg('<path d="m7 21-4.3-4.3a1.7 1.7 0 0 1 0-2.4l9.6-9.6a1.7 1.7 0 0 1 2.4 0l5.3 5.3a1.7 1.7 0 0 1 0 2.4L13 21"/><path d="M22 21H8"/><path d="m5 11 9 9"/>'),
+    backspace: svg('<path d="M20 5H9l-6 7 6 7h11a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1Z"/><path d="m17 9-6 6M11 9l6 6"/>')
+  };
+
+  // Zorluk göstergesi: seviyeye göre 1/2/3 dolu çubuk (emoji yüzler yerine).
+  function seviyeIkon(seviye) {
+    var n = K.SEVIYELER.indexOf(seviye) + 1;
+    var ic = '';
+    for (var i = 0; i < 3; i++) {
+      var y = 7 + i * 5;
+      ic += '<rect x="' + (3.5 + i * 6.5) + '" y="' + (20 - y) + '" width="4.5" height="' + y +
+        '" rx="1" fill="currentColor"' + (i < n ? '' : ' opacity="0.3"') + '/>';
+    }
+    return '<svg class="ikon" viewBox="0 0 24 24" aria-hidden="true">' + ic + '</svg>';
+  }
+
+  // HTML'deki [data-ikon] yer tutucularını gerçek SVG ile doldurur.
+  function ikonlariYerlestir() {
+    hepsi('[data-ikon]').forEach(function (el) {
+      el.innerHTML = IKON[el.dataset.ikon] || '';
+    });
+  }
+
   function baslat() {
+    ikonlariYerlestir();
     temaUygula();
     klavyeCiz();
     seviyeSecenekleriniCiz();
@@ -2019,7 +2071,7 @@ select {
   function arsivAc() {
     var seviye = durum ? durum.seviye : ayarlar.seviye;
     var bilgi = K.SEVIYE_BILGISI[seviye];
-    $('#arsiv-seviye').textContent = bilgi.simge + ' ' + bilgi.ad;
+    $('#arsiv-seviye').innerHTML = seviyeIkon(seviye) + ' ' + bilgi.ad;
 
     var bugunNo = K.bulmacaNo();
     var cozulen = Depo.arsivCozulenAl(seviye);
@@ -2326,7 +2378,9 @@ select {
       });
       // Son harf satırının sonunda geri silme tuşu.
       if (indeks === K.KLAVYE_SATIRLARI.length - 1) {
-        satir.appendChild(eylemTusu('sil', '⌫', 'Son harfi sil', 'genis'));
+        var silTus = eylemTusu('sil', '', 'Son harfi sil', 'genis');
+        silTus.innerHTML = IKON.backspace;
+        satir.appendChild(silTus);
       }
       klavye.appendChild(satir);
     });
@@ -2340,7 +2394,9 @@ select {
       '<path d="m7 21-4.3-4.3a1.7 1.7 0 0 1 0-2.4l9.6-9.6a1.7 1.7 0 0 1 2.4 0l5.3 5.3a1.7 1.7 0 0 1 0 2.4L13 21"/>' +
       '<path d="M22 21H8"/><path d="m5 11 9 9"/></svg>';
     eylemler.appendChild(temizle);
-    eylemler.appendChild(eylemTusu('ipucu', '💡', 'İpucu al'));
+    var ipucuTus = eylemTusu('ipucu', '', 'İpucu al');
+    ipucuTus.innerHTML = IKON.ipucu;
+    eylemler.appendChild(ipucuTus);
     eylemler.appendChild(eylemTusu('bosluk', 'BOŞLUK', 'Boş yer tutucu ekle', 'bosluk'));
     var gonder = eylemTusu('gir', '', 'Tahmini gönder', 'onay');
     gonder.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
@@ -2830,9 +2886,9 @@ select {
   var liderlikTur = 'seri';  // seri | hiz | ortalama
 
   var LIDERLIK_TURLERI = [
-    { anahtar: 'seri', etiket: '🔥 Seri', aciklama: 'Güncel seri uzunluğuna göre ilk 20.' },
-    { anahtar: 'hiz', etiket: '⚡ Hız', aciklama: 'En kısa çözüm süresine göre ilk 20 (eşitlikte az tahmin öne geçer).' },
-    { anahtar: 'ortalama', etiket: '🎯 Ortalama', aciklama: 'En düşük tahmin ortalamasına göre ilk 20 — en az 10 günlük bulmaca çözenler.' }
+    { anahtar: 'seri', ad: 'Seri', ikon: 'seri', aciklama: 'Güncel seri uzunluğuna göre ilk 20.' },
+    { anahtar: 'hiz', ad: 'Hız', ikon: 'hiz', aciklama: 'En kısa çözüm süresine göre ilk 20 (eşitlikte az tahmin öne geçer).' },
+    { anahtar: 'ortalama', ad: 'Ortalama', ikon: 'ortalama', aciklama: 'En düşük tahmin ortalamasına göre ilk 20 — en az 10 günlük bulmaca çözenler.' }
   ];
 
   function liderlikKur() {
@@ -2847,7 +2903,7 @@ select {
       dugme.type = 'button';
       dugme.dataset.tur = tur.anahtar;
       dugme.setAttribute('role', 'tab');
-      dugme.textContent = tur.etiket;
+      dugme.innerHTML = IKON[tur.ikon] + ' ' + tur.ad;
       dugme.addEventListener('click', function () { liderlikTurSec(tur.anahtar); });
       turKap.appendChild(dugme);
     });
@@ -2861,7 +2917,7 @@ select {
       dugme.type = 'button';
       dugme.dataset.seviye = seviye;
       dugme.setAttribute('role', 'tab');
-      dugme.textContent = bilgi.simge + ' ' + bilgi.ad;
+      dugme.innerHTML = seviyeIkon(seviye) + ' ' + bilgi.ad;
       dugme.addEventListener('click', function () { liderlikSekmeSec(seviye); });
       kap.appendChild(dugme);
     });
@@ -3016,7 +3072,7 @@ select {
     var ist = Depo.istatistikAl(durum.seviye);
     var bilgi = K.SEVIYE_BILGISI[durum.seviye];
 
-    $('#istatistik-seviye').textContent = bilgi.simge + ' ' + bilgi.ad + ' · yalnızca günlük bulmacalar';
+    $('#istatistik-seviye').textContent = bilgi.ad + ' · yalnızca günlük bulmacalar';
     $('#ist-oynanan').textContent = ist.oynanan;
     $('#ist-oran').textContent = ist.oynanan ? Math.round((ist.kazanilan / ist.oynanan) * 100) : 0;
     $('#ist-seri').textContent = ist.seri;
@@ -3082,7 +3138,7 @@ select {
       dugme.type = 'button';
       dugme.className = 'secenek';
       dugme.dataset.seviye = seviye;
-      dugme.innerHTML = '<b><span aria-hidden="true">' + bilgi.simge + '</span> ' + bilgi.ad + '</b>';
+      dugme.innerHTML = '<b>' + seviyeIkon(seviye) + ' ' + bilgi.ad + '</b>';
       var aciklama = document.createElement('span');
       aciklama.textContent = bilgi.aciklama;
       dugme.appendChild(aciklama);
@@ -3100,7 +3156,7 @@ select {
 
   function seviyeGoster() {
     var bilgi = K.SEVIYE_BILGISI[durum.seviye];
-    $('#seviye-simge').textContent = bilgi.simge;
+    $('#seviye-simge').innerHTML = seviyeIkon(durum.seviye);
     $('#dugme-seviye').dataset.seviye = durum.seviye;
     $('#dugme-seviye').title = 'Zorluk: ' + bilgi.ad;
     hepsi('[data-seviye]').forEach(function (dugme) {
@@ -3143,7 +3199,7 @@ select {
     if (renk) renk.setAttribute('content', tema === 'koyu' ? '#141414' : '#eceef1');
     // Üst bardaki düğme, tıklanınca geçilecek modun simgesini gösterir.
     var simge = $('#tema-simge');
-    if (simge) simge.textContent = tema === 'koyu' ? '☀️' : '🌙';
+    if (simge) simge.innerHTML = tema === 'koyu' ? IKON.gunes : IKON.ay;
     $('#klavye').classList.toggle('gizli', !ayarlar.klavyeAcik);
   }
 
