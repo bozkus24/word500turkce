@@ -653,7 +653,9 @@ select {
 
 /* ------------------------------------------------------------ Liderlik */
 
-.liderlik-sekmeler { display: flex; gap: .4rem; margin: .75rem 0; }
+.liderlik-turler { display: flex; gap: .4rem; margin: .75rem 0 .5rem; }
+.liderlik-turler .liderlik-sekme[aria-selected="true"] { background: var(--vurgu); border-color: var(--vurgu); }
+.liderlik-sekmeler { display: flex; gap: .4rem; margin: .25rem 0 .75rem; }
 .liderlik-sekme {
   flex: 1 1 0;
   border: 1px solid var(--cizgi);
@@ -1207,8 +1209,9 @@ select {
   <div class="kutu" role="dialog" aria-modal="true" aria-labelledby="baslik-liderlik">
     <button class="kapat" type="button" data-kapat aria-label="Kapat">×</button>
     <h2 id="baslik-liderlik">🏆 Liderlik Tablosu</h2>
-    <p class="kucuk">En uzun serilere göre ilk 20. Her zorluk seviyesinin kendi sıralaması vardır.</p>
 
+    <div class="liderlik-turler" id="liderlik-turler" role="tablist"></div>
+    <p class="kucuk" id="liderlik-aciklama"></p>
     <div class="liderlik-sekmeler" id="liderlik-sekmeler" role="tablist"></div>
 
     <div class="liderlik-liste" id="liderlik-liste" aria-live="polite"></div>
@@ -1764,7 +1767,7 @@ select {
 
   var VARSAYILAN_AYARLAR = {
     seviye: 'standart',
-    tema: 'sistem',      // koyu | acik | sistem — varsayılan cihaz tercihi
+    tema: 'acik',        // koyu | acik | sistem — varsayılan aydınlık
     yuksekKontrast: false,
     klavyeAcik: true,
     liderlikKatil: false, // liderlik tablosunda herkese açık görünme
@@ -1796,7 +1799,9 @@ select {
       seri: 0,
       enUzunSeri: 0,
       sonBulmaca: null,
-      dagilim: [0, 0, 0, 0, 0, 0, 0, 0]
+      dagilim: [0, 0, 0, 0, 0, 0, 0, 0],
+      enHizliMs: null,      // en kısa çözüm süresi (ms)
+      enHizliTahmin: null   // o çözümdeki tahmin sayısı (eşitlikte sıralama için)
     };
   }
 
@@ -1812,7 +1817,7 @@ select {
   }
 
   // Yalnızca günlük bulmaca istatistiğe işlenir; alıştırma modu sayılmaz.
-  function sonucKaydet(seviye, bulmacaNo, kazandi, tahminSayisi) {
+  function sonucKaydet(seviye, bulmacaNo, kazandi, tahminSayisi, sureMs) {
     var ist = istatistikAl(seviye);
     if (ist.sonBulmaca === bulmacaNo) return ist; // aynı bulmaca iki kez sayılmasın
 
@@ -1823,6 +1828,12 @@ select {
       // Seri, bir önceki günün bulmacası çözülmüşse devam eder.
       ist.seri = ist.sonBulmaca === bulmacaNo - 1 ? ist.seri + 1 : 1;
       if (ist.seri > ist.enUzunSeri) ist.enUzunSeri = ist.seri;
+      // En hızlı çözüm süresi (varsa) — daha kısaysa güncellenir.
+      if (typeof sureMs === 'number' && sureMs > 0 &&
+          (ist.enHizliMs == null || sureMs < ist.enHizliMs)) {
+        ist.enHizliMs = sureMs;
+        ist.enHizliTahmin = tahminSayisi;
+      }
     } else {
       ist.seri = 0;
     }
@@ -1888,7 +1899,8 @@ select {
       aktifBoya: durum.aktifBoya,
       bitti: durum.bitti,
       kazandi: durum.kazandi,
-      ipucuSayisi: durum.ipucuSayisi
+      ipucuSayisi: durum.ipucuSayisi,
+      baslangicZamani: durum.baslangicZamani || null
     });
     eskileriTemizle(tarihAnahtari);
   }
@@ -1980,6 +1992,11 @@ select {
   // Karşılama menüsünden seçilen modla oyuna geçiş.
   function oyunaBasla(mod) {
     oyunKur(mod, durum ? durum.seviye : ayarlar.seviye);
+    // Çözüm süresi saati, henüz başlanmamış günlük bulmacada oyuna girer girmez
+    // başlar (böylece ilk tahminde kazanmak da düşünme süresini içerir).
+    if (mod === 'gunluk' && !durum.bitti && !durum.gecmis.length && !durum.baslangicZamani) {
+      durum.baslangicZamani = Date.now();
+    }
     var k = $('#karsilama');
     if (k) k.hidden = true;
   }
@@ -2069,7 +2086,8 @@ select {
       aktifBoya: bosBoya(),
       bitti: false,
       kazandi: false,
-      ipucuSayisi: 0
+      ipucuSayisi: 0,
+      baslangicZamani: null   // ilk tahmin anı (çözüm süresi için)
     };
 
     if (mod === 'gunluk') {
@@ -2084,6 +2102,7 @@ select {
         yeni.bitti = !!kayit.bitti;
         yeni.kazandi = !!kayit.kazandi;
         yeni.ipucuSayisi = kayit.ipucuSayisi || 0;
+        yeni.baslangicZamani = kayit.baslangicZamani || null;
       }
     } else if (mod === 'arsiv') {
       // O güne ait günlük kelime; arşiv oyunları kaydedilmez, istatistiğe işlenmez.
@@ -2441,6 +2460,11 @@ select {
     var skor = K.skorla(tahmin, durum.kelime);
     var kazandi = skor.yesil === K.HARF_SAYISI;
 
+    // Çözüm süresi için: ilk tahminde saati başlat (yalnızca günlük bulmacada).
+    if (durum.mod === 'gunluk' && !durum.baslangicZamani) {
+      durum.baslangicZamani = Date.now();
+    }
+
     // Manuel boya oyuncuya aittir; kesin (otomatik) renkler kesinleriGuncelle ile
     // atanır ve silgiden etkilenmez.
     durum.gecmis.push({ kelime: tahmin, skor: skor, boya: durum.aktifBoya, kesin: bosBoya() });
@@ -2467,7 +2491,8 @@ select {
 
     if (durum.bitti) {
       if (durum.mod === 'gunluk') {
-        Depo.sonucKaydet(durum.seviye, durum.bulmacaNo, kazandi, durum.gecmis.length);
+        var sureMs = (kazandi && durum.baslangicZamani) ? (Date.now() - durum.baslangicZamani) : null;
+        Depo.sonucKaydet(durum.seviye, durum.bulmacaNo, kazandi, durum.gecmis.length, sureMs);
         hesabaGonder();
       } else if (durum.mod === 'arsiv' && kazandi) {
         Depo.arsivCozulenEkle(durum.seviye, durum.bulmacaNo);
@@ -2700,6 +2725,12 @@ select {
     if (!Array.isArray(birlesik.dagilim) || birlesik.dagilim.length !== 8) {
       birlesik.dagilim = bos.dagilim;
     }
+    // En hızlı çözüm: iki taraftan küçük olanı (varsa) ve o çözümün tahmin sayısı.
+    var yh = yerel.enHizliMs, bh = bulut.enHizliMs;
+    if (yh == null) { birlesik.enHizliMs = bh; birlesik.enHizliTahmin = bulut.enHizliTahmin; }
+    else if (bh == null) { birlesik.enHizliMs = yh; birlesik.enHizliTahmin = yerel.enHizliTahmin; }
+    else if (yh <= bh) { birlesik.enHizliMs = yh; birlesik.enHizliTahmin = yerel.enHizliTahmin; }
+    else { birlesik.enHizliMs = bh; birlesik.enHizliTahmin = bulut.enHizliTahmin; }
     return birlesik;
   }
 
@@ -2795,11 +2826,31 @@ select {
 
   // ------------------------------------------------------------- Liderlik
 
-  var liderlikSeviye = null; // açık olan sekme
+  var liderlikSeviye = null; // açık olan zorluk sekmesi
+  var liderlikTur = 'seri';  // seri | hiz | ortalama
+
+  var LIDERLIK_TURLERI = [
+    { anahtar: 'seri', etiket: '🔥 Seri', aciklama: 'Güncel seri uzunluğuna göre ilk 20.' },
+    { anahtar: 'hiz', etiket: '⚡ Hız', aciklama: 'En kısa çözüm süresine göre ilk 20 (eşitlikte az tahmin öne geçer).' },
+    { anahtar: 'ortalama', etiket: '🎯 Ortalama', aciklama: 'En düşük tahmin ortalamasına göre ilk 20 — en az 10 günlük bulmaca çözenler.' }
+  ];
 
   function liderlikKur() {
     if (!bulutYapilandirildiMi()) return; // liderlik buluta bağlı
     $('#dugme-liderlik').classList.remove('gizli');
+
+    // Tür sekmeleri (seri · hız · ortalama)
+    var turKap = $('#liderlik-turler');
+    LIDERLIK_TURLERI.forEach(function (tur) {
+      var dugme = document.createElement('button');
+      dugme.className = 'liderlik-sekme';
+      dugme.type = 'button';
+      dugme.dataset.tur = tur.anahtar;
+      dugme.setAttribute('role', 'tab');
+      dugme.textContent = tur.etiket;
+      dugme.addEventListener('click', function () { liderlikTurSec(tur.anahtar); });
+      turKap.appendChild(dugme);
+    });
 
     // Zorluk sekmeleri
     var kap = $('#liderlik-sekmeler');
@@ -2824,11 +2875,11 @@ select {
         if (!ayarlar.liderlikAd) $('#liderlik-ad').value = liderlikAdiAl();
         liderligeGonder();
         bildir('Liderlik tablosuna eklendiniz');
-        liderlikYukle(liderlikSeviye);
+        liderlikYenile();
       } else if (Bulut && Bulut.liderliktenCik) {
         Bulut.liderliktenCik().catch(function () {});
         bildir('Liderlik tablosundan çıkıldı');
-        liderlikYukle(liderlikSeviye);
+        liderlikYenile();
       }
     });
 
@@ -2853,15 +2904,45 @@ select {
     }
   }
 
+  function liderlikTurSec(tur) {
+    liderlikTur = tur;
+    hepsi('#liderlik-turler .liderlik-sekme').forEach(function (d) {
+      d.setAttribute('aria-selected', d.dataset.tur === tur ? 'true' : 'false');
+    });
+    var bilgi = LIDERLIK_TURLERI.filter(function (t) { return t.anahtar === tur; })[0];
+    $('#liderlik-aciklama').textContent = bilgi ? bilgi.aciklama : '';
+    liderlikYenile();
+  }
+
   function liderlikSekmeSec(seviye) {
     liderlikSeviye = seviye;
     hepsi('#liderlik-sekmeler .liderlik-sekme').forEach(function (d) {
       d.setAttribute('aria-selected', d.dataset.seviye === seviye ? 'true' : 'false');
     });
-    liderlikYukle(seviye);
+    liderlikYenile();
   }
 
-  function liderlikYukle(seviye) {
+  function sureFormat(ms) {
+    var s = Math.round(ms / 1000);
+    var dk = Math.floor(s / 60);
+    var sn = s % 60;
+    return dk + ':' + String(sn).padStart(2, '0');
+  }
+
+  // Bir liderlik kaydının, o türe göre gösterilecek değeri (sayı + küçük etiket).
+  function liderlikDegeri(kayit, tur) {
+    if (tur === 'hiz') {
+      return { deger: sureFormat(kayit.enHizliMs), etiket: (kayit.enHizliTahmin || '?') + ' tahmin' };
+    }
+    if (tur === 'ortalama') {
+      return { deger: (Math.round(kayit.ortalamaTahmin * 100) / 100).toFixed(2), etiket: kayit.kazanilan + ' bulmaca' };
+    }
+    return { deger: kayit.seri, etiket: 'güncel seri' };
+  }
+
+  function liderlikYenile() {
+    var seviye = liderlikSeviye, tur = liderlikTur;
+    if (!seviye) return;
     var kap = $('#liderlik-liste');
     kap.innerHTML = '<p class="liderlik-bos">Yükleniyor…</p>';
     var Bulut = window.Word500trBulut;
@@ -2870,9 +2951,17 @@ select {
       return;
     }
     var benimUid = (Bulut.kullanici && Bulut.kullanici()) ? Bulut.kullanici().uid : null;
-    Bulut.liderlikGetir(seviye, 20).then(function (liste) {
-      if (seviye !== liderlikSeviye) return; // sekme değişmişse eski isteği yoksay
-      if (!liste || !liste.length) {
+    Bulut.liderlikGetir(seviye, tur, 20).then(function (liste) {
+      if (seviye !== liderlikSeviye || tur !== liderlikTur) return; // sekme değiştiyse yoksay
+      liste = liste || [];
+      // Hız türünde eşit sürede az tahmin öne geçsin (istemci tarafı ince sıralama).
+      if (tur === 'hiz') {
+        liste.sort(function (a, b) {
+          if (a.enHizliMs !== b.enHizliMs) return a.enHizliMs - b.enHizliMs;
+          return (a.enHizliTahmin || 99) - (b.enHizliTahmin || 99);
+        });
+      }
+      if (!liste.length) {
         kap.innerHTML = '<p class="liderlik-bos">Henüz kimse yok. İlk sen ol!</p>';
         return;
       }
@@ -2889,23 +2978,34 @@ select {
         ad.className = 'liderlik-ad';
         ad.textContent = kayit.ad;
 
-        var seri = document.createElement('span');
-        seri.className = 'liderlik-seri';
-        seri.innerHTML = kayit.enUzunSeri + '<span>en uzun</span>';
+        var deger = liderlikDegeri(kayit, tur);
+        var sag = document.createElement('span');
+        sag.className = 'liderlik-seri';
+        sag.appendChild(document.createTextNode(deger.deger));
+        var kucuk = document.createElement('span');
+        kucuk.textContent = deger.etiket;
+        sag.appendChild(kucuk);
 
         satir.appendChild(sira);
         satir.appendChild(ad);
-        satir.appendChild(seri);
+        satir.appendChild(sag);
         kap.appendChild(satir);
       });
     }).catch(function () {
-      if (seviye !== liderlikSeviye) return;
+      if (seviye !== liderlikSeviye || tur !== liderlikTur) return;
       kap.innerHTML = '<p class="liderlik-bos">Liste alınamadı. Sonra tekrar deneyin.</p>';
     });
   }
 
   function liderlikAc() {
     liderlikKatilimGuncelle();
+    // Tür sekmesini yeniden yükleme yapmadan yansıt; yükleme tek seferde
+    // zorluk sekmesi seçilirken olur.
+    hepsi('#liderlik-turler .liderlik-sekme').forEach(function (d) {
+      d.setAttribute('aria-selected', d.dataset.tur === liderlikTur ? 'true' : 'false');
+    });
+    var bilgi = LIDERLIK_TURLERI.filter(function (t) { return t.anahtar === liderlikTur; })[0];
+    $('#liderlik-aciklama').textContent = bilgi ? bilgi.aciklama : '';
     liderlikSekmeSec(durum ? durum.seviye : 'standart');
     kutuAc('perde-liderlik');
   }
@@ -3315,12 +3415,29 @@ select {
         var belge = { ad: String(ad || '').slice(0, 20), guncelleme: fs.serverTimestamp() };
         Object.keys(tumIstatistikler || {}).forEach(function (seviye) {
           var i = tumIstatistikler[seviye] || {};
-          belge[seviye] = {
+          // Ortalama tahmin, dağılımdan hesaplanır.
+          var dagilim = Array.isArray(i.dagilim) ? i.dagilim : [];
+          var toplamTahmin = 0;
+          for (var t = 0; t < dagilim.length; t++) toplamTahmin += (t + 1) * (dagilim[t] || 0);
+          var kazanilan = i.kazanilan || 0;
+
+          var alan = {
             enUzunSeri: i.enUzunSeri || 0,
             seri: i.seri || 0,
-            kazanilan: i.kazanilan || 0,
+            kazanilan: kazanilan,
             oynanan: i.oynanan || 0
           };
+          // Yalnızca gerçek değer varken alanı ekle: böylece Firestore sıralaması
+          // (orderBy) niteliksiz kullanıcıları listeye almaz.
+          if (i.enHizliMs != null) {
+            alan.enHizliMs = i.enHizliMs;
+            alan.enHizliTahmin = i.enHizliTahmin || 0;
+          }
+          // Ortalama tablosuna girmek için en az 10 çözülmüş bulmaca şartı.
+          if (kazanilan >= 10) {
+            alan.ortalamaTahmin = toplamTahmin / kazanilan;
+          }
+          belge[seviye] = alan;
         });
         await fs.setDoc(fs.doc(db, 'liderlik', kullaniciSon.uid), belge);
       },
@@ -3328,10 +3445,16 @@ select {
         if (!kullaniciSon) return;
         await fs.deleteDoc(fs.doc(db, 'liderlik', kullaniciSon.uid));
       },
-      liderlikGetir: async function (seviye, adet) {
+      liderlikGetir: async function (seviye, tur, adet) {
+        // Türe göre sıralama alanı ve yönü.
+        var alan, yon;
+        if (tur === 'hiz') { alan = 'enHizliMs'; yon = 'asc'; }
+        else if (tur === 'ortalama') { alan = 'ortalamaTahmin'; yon = 'asc'; }
+        else { alan = 'seri'; yon = 'desc'; }
+
         var sorgu = fs.query(
           fs.collection(db, 'liderlik'),
-          fs.orderBy(seviye + '.enUzunSeri', 'desc'),
+          fs.orderBy(seviye + '.' + alan, yon),
           fs.limit(adet || 20)
         );
         var anlik = await fs.getDocs(sorgu);
@@ -3342,8 +3465,11 @@ select {
           sonuc.push({
             uid: belge.id,
             ad: d.ad || 'Anonim',
-            enUzunSeri: s.enUzunSeri || 0,
-            seri: s.seri || 0
+            seri: s.seri || 0,
+            enHizliMs: (s.enHizliMs != null ? s.enHizliMs : null),
+            enHizliTahmin: (s.enHizliTahmin != null ? s.enHizliTahmin : null),
+            ortalamaTahmin: (s.ortalamaTahmin != null ? s.ortalamaTahmin : null),
+            kazanilan: s.kazanilan || 0
           });
         });
         return sonuc;
