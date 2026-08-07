@@ -4,8 +4,28 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>word500tr — Türkçe kelime bulmacası</title>
-<meta name="description" content="word500tr: gizli 5 harfli Türkçe kelimeyi 8 tahminde bul. Hangi harfin doğru olduğu değil, kaç harfin doğru olduğu söylenir.">
+<meta name="description" content="word500tr: gizli 5 harfli Türkçe kelimeyi 8 tahminde bul. Hangi harfin doğru olduğu değil, kaç harfin doğru olduğu söylenir. Ücretsiz Türkçe kelime bulmacası.">
 <meta name="theme-color" content="#141414">
+<meta name="robots" content="index,follow">
+<meta name="keywords" content="türkçe wordle, günlük kelime oyunu, türkçe bulmaca, kelime tahmin oyunu, word500tr">
+<link rel="canonical" href="https://word500tr.netlify.app/">
+
+<!-- Open Graph (WhatsApp, Facebook, LinkedIn önizlemesi) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="word500tr">
+<meta property="og:title" content="word500tr — Türkçe kelime bulmacası">
+<meta property="og:description" content="Gizli 5 harfli Türkçe kelimeyi 8 tahminde bul. Her gün yeni bulmaca — ücretsiz.">
+<meta property="og:url" content="https://word500tr.netlify.app/">
+<meta property="og:image" content="https://word500tr.netlify.app/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="tr_TR">
+
+<!-- Twitter/X kartı -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="word500tr — Türkçe kelime bulmacası">
+<meta name="twitter:description" content="Gizli 5 harfli Türkçe kelimeyi 8 tahminde bul. Her gün yeni bulmaca — ücretsiz.">
+<meta name="twitter:image" content="https://word500tr.netlify.app/og.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='14' fill='%231f1f1f'/><rect x='10' y='10' width='38' height='38' rx='6' fill='%23f2f2f2'/><rect x='52' y='10' width='38' height='38' rx='6' fill='%234a9d54'/><rect x='10' y='52' width='38' height='38' rx='6' fill='%23cbb95e'/><rect x='52' y='52' width='38' height='38' rx='6' fill='%23d95757'/></svg>">
 <style>
 /* word500tr — Türkçe kelime bulmacası */
@@ -384,6 +404,11 @@ button { font: inherit; color: inherit; }
 .tus.onay:hover { filter: brightness(1.08); }
 .tus.yok { background: var(--kirmizi); color: var(--kirmizi-yazi); }
 .tus.var { background: var(--yesil); color: var(--yesil-yazi); }
+/* Oyuncunun kutuya koyduğu renk, o harfin klavye tuşuna da yansır ve
+   otomatik işaretin (yok/var) üstüne yazar. */
+.tus[data-boya="kirmizi"] { background: var(--kirmizi); color: var(--kirmizi-yazi); }
+.tus[data-boya="sari"] { background: var(--sari); color: var(--sari-yazi); }
+.tus[data-boya="yesil"] { background: var(--yesil); color: var(--yesil-yazi); }
 .tus:disabled { opacity: .4; cursor: not-allowed; }
 
 /* ---------------------------------------------------------- Bildirimler */
@@ -1021,9 +1046,9 @@ select {
 
     <h3>Zorluk seviyeleri</h3>
     <ul class="anahtar-liste">
-      <li><strong>Kolay</strong> — sık kullanılan kelimeler. Aynı harf iki kez geçmez; j, f, v, ğ kullanılmaz.</li>
-      <li><strong>Standart</strong> — daha geniş havuz. Aynı harf iki kez geçmez; j ve f kullanılmaz.</li>
-      <li><strong>Zor</strong> — tüm havuz. Harfler tekrar edebilir, bütün harfler kullanılabilir.</li>
+      <li><strong>Kolay</strong> — aynı harf iki kez geçmez; <strong>j, f, v, ğ</strong> hiç kullanılmaz ve bu harfler klavyede baştan kırmızıdır.</li>
+      <li><strong>Standart</strong> — aynı harf iki kez geçmez; bütün harfler kullanılabilir.</li>
+      <li><strong>Zor</strong> — harfler tekrar edebilir, bütün harfler kullanılabilir.</li>
     </ul>
 
     <h3>Klavye ve yardımcılar</h3>
@@ -1323,16 +1348,24 @@ select {
   var SEVIYE_BILGISI = {
     kolay: {
       ad: 'Kolay',
-      aciklama: 'Sık kullanılan kelimeler. Aynı harf iki kez geçmez; j, f, v ve ğ harfleri kullanılmaz.'
+      aciklama: 'Aynı harf iki kez geçmez; j, f, v ve ğ hiç kullanılmaz.'
     },
     standart: {
       ad: 'Standart',
-      aciklama: 'Daha geniş kelime havuzu. Aynı harf iki kez geçmez; j ve f harfleri kullanılmaz.'
+      aciklama: 'Aynı harf iki kez geçmez; bütün harfler kullanılabilir.'
     },
     zor: {
       ad: 'Zor',
-      aciklama: 'Tüm kelime havuzu. Aynı harf birden fazla geçebilir, bütün harfler kullanılabilir.'
+      aciklama: 'Aynı harf birden fazla geçebilir, bütün harfler kullanılabilir.'
     }
+  };
+
+  // Seviyeye göre gizli kelimede hiç kullanılmayan harfler (klavyede baştan
+  // kırmızı gösterilir ve kelime havuzu buna göre süzülür).
+  var KULLANILMAYAN = {
+    kolay: ['j', 'f', 'v', 'ğ'],
+    standart: [],
+    zor: []
   };
 
   // ---------------------------------------------------------------- Türkçe
@@ -1662,6 +1695,7 @@ select {
     KLAVYE_SATIRLARI: KLAVYE_SATIRLARI,
     SEVIYELER: SEVIYELER,
     SEVIYE_BILGISI: SEVIYE_BILGISI,
+    KULLANILMAYAN: KULLANILMAYAN,
     BASLANGIC: BASLANGIC,
     YER_TUTUCU: YER_TUTUCU,
     BOYALAR: BOYALAR,
@@ -2026,7 +2060,33 @@ select {
     });
   }
 
+  // Gizli kelime havuzlarını kurallara göre türetir: zor temel havuzdur;
+  // standart = tekrarsız harfli kelimeler; kolay = tekrarsız + kullanılmayan
+  // harfleri (j, f, v, ğ) içermeyen kelimeler.
+  function havuzlariAyarla() {
+    var zor = Veri.HAVUZLAR.zor;
+    function tekrarsiz(k) {
+      for (var i = 0; i < k.length; i++) {
+        for (var j = i + 1; j < k.length; j++) if (k[i] === k[j]) return false;
+      }
+      return true;
+    }
+    function haricmi(k, harfler) {
+      for (var i = 0; i < k.length; i++) if (harfler.indexOf(k[i]) !== -1) return true;
+      return false;
+    }
+    var kolayHaric = K.KULLANILMAYAN.kolay;
+    Veri.HAVUZLAR.standart = zor.filter(function (i) {
+      return tekrarsiz(Veri.SOZLUK[i]);
+    });
+    Veri.HAVUZLAR.kolay = zor.filter(function (i) {
+      var w = Veri.SOZLUK[i];
+      return tekrarsiz(w) && !haricmi(w, kolayHaric);
+    });
+  }
+
   function baslat() {
+    havuzlariAyarla();
     ikonlariYerlestir();
     temaUygula();
     klavyeCiz();
@@ -2355,6 +2415,7 @@ select {
     var kutucuk = $('#tahta').children[satirNo].children[sutunNo];
     kutucuk.dataset.boya = hedefBoya[sutunNo];
     kutucuk.setAttribute('aria-label', boyaEtiketi(kutucuk.textContent, hedefBoya[sutunNo]));
+    klavyeDurumuGuncelle(); // boyayı klavye tuşuna da yansıt
     kaydet();
   }
 
@@ -2425,6 +2486,9 @@ select {
     var yok = {};
     var varOlan = {};
 
+    // Bu seviyede gizli kelimede hiç kullanılmayan harfler baştan kırmızı.
+    (K.KULLANILMAYAN[durum.seviye] || []).forEach(function (harf) { yok[harf] = true; });
+
     durum.gecmis.forEach(function (adim) {
       if (adim.skor.kirmizi === K.HARF_SAYISI) {
         adim.kelime.split('').forEach(function (harf) { yok[harf] = true; });
@@ -2434,10 +2498,33 @@ select {
       }
     });
 
+    // Oyuncunun kutulara koyduğu (ve otomatik/kesin) renkleri harf bazında topla:
+    // bir harf birden çok yerde boyanmışsa en olumlu renk kazanır (yeşil>sarı>kırmızı).
+    var oncelik = { yesil: 3, sari: 2, kirmizi: 1 };
+    var harfBoya = {};
+    function boyaEkle(kelime, renkler) {
+      if (!kelime) return;
+      for (var i = 0; i < kelime.length; i++) {
+        var h = kelime[i], r = renkler && renkler[i];
+        if (!r) continue;
+        if (!harfBoya[h] || oncelik[r] > oncelik[harfBoya[h]]) harfBoya[h] = r;
+      }
+    }
+    durum.gecmis.forEach(function (adim) {
+      var etkin = [];
+      for (var i = 0; i < K.HARF_SAYISI; i++) {
+        etkin[i] = (adim.kesin && adim.kesin[i]) ? adim.kesin[i] : (adim.boya ? adim.boya[i] : '');
+      }
+      boyaEkle(adim.kelime, etkin);
+    });
+    boyaEkle(durum.aktif, durum.aktifBoya);
+
     hepsi('#klavye .tus[data-harf]').forEach(function (tus) {
       var harf = tus.dataset.harf;
       tus.classList.toggle('yok', !!yok[harf] && !varOlan[harf]);
       tus.classList.toggle('var', !!varOlan[harf]);
+      if (harfBoya[harf]) tus.dataset.boya = harfBoya[harf];
+      else tus.removeAttribute('data-boya');
     });
   }
 
@@ -2481,6 +2568,7 @@ select {
     durum.aktifBoya = bosBoya();
     durum.gecmis.forEach(function (adim) { adim.boya = bosBoya(); });
     tahtaCiz();
+    klavyeDurumuGuncelle(); // temizlenen boyalar klavyeden de kalksın
     kaydet();
     if (boyaVarMi) bildir('İşaretler temizlendi');
   }
@@ -2696,14 +2784,26 @@ select {
       seviye: durum.seviye,
       kazandi: durum.kazandi,
       gecmis: durum.gecmis,
-      adres: durum.mod === 'gunluk' ? window.location.origin + window.location.pathname : ''
+      adres: ''
     });
+    // Günlükte seriyi ekle (kimlik + rekabet, paylaşımı çekici kılar).
+    if (durum.mod === 'gunluk' && durum.kazandi) {
+      var ist = Depo.istatistikAl(durum.seviye);
+      if (ist.seri > 1) metin += '\n' + ist.seri + ' gün seri';
+    }
+    var adres = window.location.origin + window.location.pathname;
 
-    if (navigator.share && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      navigator.share({ text: metin }).catch(function () { panoyaKopyala(metin); });
+    // Tek buton: destekleyen her cihaz/tarayıcıda sistem paylaş menüsünü açar
+    // (WhatsApp, X, Instagram, Telegram, kopyala…); kullanıcı mecrasını seçer.
+    // Desteklenmeyen yerlerde panoya kopyalar.
+    if (navigator.share) {
+      navigator.share({ title: 'word500tr', text: metin, url: adres }).catch(function (hata) {
+        if (hata && hata.name === 'AbortError') return; // kullanıcı iptal etti
+        panoyaKopyala(metin + '\n' + adres);
+      });
       return;
     }
-    panoyaKopyala(metin);
+    panoyaKopyala(metin + '\n' + adres);
   }
 
   function panoyaKopyala(metin) {
