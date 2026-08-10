@@ -1,4 +1,4 @@
-# word500tr — Türkçe kelime bulmacası
+# HARF500 — Türkçe kelime bulmacası
 
 Gizli **5 harfli Türkçe kelimeyi 8 tahminde** bulmaya çalıştığınız bir kelime
 oyunu.
