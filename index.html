@@ -560,6 +560,11 @@ button { font: inherit; color: inherit; }
 .yardim-blok.sari { background: var(--sari); }
 .yardim-blok.kirmizi { background: var(--kirmizi); }
 
+/* "Nasıl Oynanır" ilk açılış alanı: kutucuk + büyük ortalı Anladım butonu. */
+#yardim-gizle-alani { display: flex; flex-direction: column; align-items: center; gap: .7rem; margin-top: 1.25rem; }
+#yardim-gizle-alani[hidden] { display: none; }
+#dugme-yardim-anladim { font-size: 1.08rem; font-weight: 700; padding: .85rem 3rem; }
+
 kbd {
   background: var(--tus);
   border: 1px solid var(--cizgi);
@@ -622,6 +627,20 @@ code {
 .secenek[aria-pressed="true"] { border-color: var(--yesil); box-shadow: inset 0 0 0 1px var(--yesil); }
 
 /* -------------------------------------------------------- İstatistikler */
+
+.gun-sonuc {
+  background: var(--zemin);
+  border-left: 3px solid var(--cizgi);
+  border-radius: 0 8px 8px 0;
+  padding: .6rem .85rem;
+  font-size: .92rem;
+  line-height: 1.5;
+  margin: .25rem 0 .5rem;
+}
+.gun-sonuc.kazandi { border-left-color: var(--yesil); }
+.gun-sonuc.kayip { border-left-color: var(--kirmizi); }
+.gun-sonuc.bekliyor { color: var(--yazi-soluk); }
+.gun-sonuc b { font-variant-numeric: tabular-nums; }
 
 .istatistik-satiri { display: flex; gap: .5rem; margin: 1rem 0; }
 .istatistik { flex: 1 1 0; text-align: center; }
@@ -688,6 +707,7 @@ code {
   padding: .8rem 0;
   border-bottom: 1px solid var(--cizgi);
 }
+.ayar:last-child { border-bottom: 0; }
 .ayar b { font-size: .9rem; }
 .ayar p { margin: .15rem 0 0; }
 
@@ -1020,13 +1040,13 @@ select {
 <div class="perde" id="perde-yardim" hidden>
   <div class="kutu" role="dialog" aria-modal="true" aria-labelledby="baslik-yardim">
     <button class="kapat" type="button" data-kapat aria-label="Kapat">×</button>
-    <h2 id="baslik-yardim">Nasıl oynanır?</h2>
+    <h2 id="baslik-yardim">Nasıl Oynanır</h2>
 
     <p><strong>Oyunun Amacı:</strong> 5 harfli gizli kelimeyi 8 tahmin içerisinde bulmaya çalışmak.</p>
 
     <p class="uyari">
       <strong>Not:</strong> Hangi harfin doğru olduğu size söylenmez; yalnızca
-      <em>kaç tanesinin</em> doğru olduğu söylenir. Hangileri olduğunu kendiniz
+      <strong>kaç tanesinin</strong> doğru olduğu söylenir. Hangileri olduğunu kendiniz
       çıkarmanız gerekir.
     </p>
 
@@ -1094,6 +1114,13 @@ select {
       <strong>Sınırsız</strong> modda istediğiniz kadar oynayabilirsiniz.
       Sınırsız mod ve Arşiv modundaki oyunlarınız istatistiklere işlenmez.
     </p>
+
+    <div id="yardim-gizle-alani" hidden>
+      <label class="onay">
+        <input type="checkbox" id="ayar-yardim-gizle"> Bir daha gösterme
+      </label>
+      <button class="arac vurgulu" id="dugme-yardim-anladim" type="button">Anladım</button>
+    </div>
   </div>
 </div>
 
@@ -1133,6 +1160,10 @@ select {
     <h2 id="baslik-istatistik">İstatistikler</h2>
     <p class="kucuk" id="istatistik-seviye"></p>
 
+    <h3>Bugünün sonucu</h3>
+    <div class="gun-sonuc" id="gun-sonuc"></div>
+
+    <h3>Genel istatistikler</h3>
     <div class="istatistik-satiri">
       <div class="istatistik"><b id="ist-oynanan">0</b><span>Oynanan</span></div>
       <div class="istatistik"><b id="ist-oran">0</b><span>Kazanma %</span></div>
@@ -1215,14 +1246,6 @@ select {
         <span class="anahtar-govde" aria-hidden="true"></span>
       </label>
     </div>
-
-    <p class="kucuk altbilgi">
-      HARF500 · Türkçe kelime tahmin oyunu.
-    </p>
-    <p class="kucuk" style="margin-top: .5rem">
-      <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a> ·
-      <a href="kosullar.html" target="_blank" rel="noopener">Kullanım Koşulları</a>
-    </p>
   </div>
 </div>
 
@@ -1855,6 +1878,7 @@ select {
     tema: 'acik',        // koyu | acik | sistem — varsayılan aydınlık
     yuksekKontrast: false,
     klavyeAcik: true,
+    yardimGizle: false,   // "Nasıl oynanır" ilk açılışta otomatik açılır; kapatılınca gizlenir
     liderlikKatil: false, // liderlik tablosunda herkese açık görünme
     liderlikAd: ''        // liderlikte görünen ad (takma ad)
   };
@@ -2055,6 +2079,7 @@ select {
 
   var ayarlar = Depo.ayarlariAl();
   var durum = null;
+  var istGunluk = null; // istatistik ekranında paylaşılacak bugünkü günlük sonucu
   var geriSayimZamani = null;
   var kilit = false; // animasyon sırasında girdi almayı engeller
 
@@ -2164,9 +2189,8 @@ select {
     liderlikKur();
     oyunKur('gunluk', ayarlar.seviye);
 
-    // Karşılama ekranındaki günün bulmaca numarası.
-    var bilgi = $('#karsilama-bilgi');
-    if (bilgi) bilgi.textContent = 'Bugünün bulmacası · #' + K.bulmacaNo();
+    // İlk açılışta (veya "bir daha gösterme" seçilmediyse) nasıl oynanır penceresi.
+    if (!ayarlar.yardimGizle) yardimAc(true);
   }
 
   // Takvim (oyun modu) menüsünden seçilen modla oyuna geçiş.
@@ -2851,21 +2875,24 @@ select {
 
   // ------------------------------------------------------------ Paylaşım
 
-  function paylas() {
-    if (!durum.bitti) {
+  function paylas(oyun) {
+    // Bir oyun state verilirse onu (örn. istatistik ekranından bugünün günlüğü),
+    // yoksa (ör. tıklama olayı geldiğinde) mevcut oyunu paylaş.
+    oyun = (oyun && oyun.gecmis) ? oyun : durum;
+    if (!oyun.bitti) {
       bildir('Önce oyunu bitirin');
       return;
     }
     var metin = K.paylasimMetni({
-      bulmacaNo: durum.bulmacaNo,
-      seviye: durum.seviye,
-      kazandi: durum.kazandi,
-      gecmis: durum.gecmis,
+      bulmacaNo: oyun.bulmacaNo,
+      seviye: oyun.seviye,
+      kazandi: oyun.kazandi,
+      gecmis: oyun.gecmis,
       adres: ''
     });
     // Günlükte seriyi ekle (kimlik + rekabet, paylaşımı çekici kılar).
-    if (durum.mod === 'gunluk' && durum.kazandi) {
-      var ist = Depo.istatistikAl(durum.seviye);
+    if (oyun.mod === 'gunluk' && oyun.kazandi) {
+      var ist = Depo.istatistikAl(oyun.seviye);
       if (ist.seri > 1) metin += '\n' + ist.seri + ' gün seri';
     }
     var adres = window.location.origin + window.location.pathname;
@@ -3245,11 +3272,53 @@ select {
 
   // ------------------------------------------------------------ İstatistik
 
+  // Bugünün günlük oyununu döndürür: durum bugünün günlüğüyse onu (en güncel),
+  // değilse kayıttan yükler. Yoksa null.
+  function bugunkuGunlukOyun(seviye) {
+    var bugun = K.tarihAnahtari(new Date());
+    if (durum && durum.mod === 'gunluk' && durum.tarih === bugun && durum.seviye === seviye) {
+      return { mod: 'gunluk', seviye: seviye, bulmacaNo: durum.bulmacaNo, kelime: durum.kelime,
+        gecmis: durum.gecmis, bitti: durum.bitti, kazandi: durum.kazandi, ipucuSayisi: durum.ipucuSayisi };
+    }
+    var kayit = Depo.oyunAl(seviye, bugun);
+    if (!kayit) return null;
+    return { mod: 'gunluk', seviye: seviye, bulmacaNo: K.bulmacaNo(), kelime: kayit.kelime,
+      gecmis: kayit.gecmis, bitti: kayit.bitti, kazandi: kayit.kazandi, ipucuSayisi: kayit.ipucuSayisi };
+  }
+
+  function gunSonucunuGoster(oyun) {
+    var kutu = $('#gun-sonuc');
+    kutu.classList.remove('kazandi', 'kayip', 'bekliyor');
+    if (!oyun) {
+      kutu.classList.add('bekliyor');
+      kutu.textContent = 'Bugünkü bulmacayı henüz oynamadınız.';
+      return;
+    }
+    if (!oyun.bitti) {
+      kutu.classList.add('bekliyor');
+      kutu.textContent = 'Bugünkü bulmaca sürüyor. Bitirince sonucunuz burada görünür.';
+      return;
+    }
+    var kel = K.buyut(oyun.kelime);
+    if (oyun.kazandi) {
+      kutu.classList.add('kazandi');
+      kutu.innerHTML = 'Bugün <b>' + kel + '</b> kelimesini <b>' + oyun.gecmis.length + '/' + K.TAHMIN_HAKKI +
+        '</b> tahminde buldunuz.' + (oyun.ipucuSayisi ? ' (' + oyun.ipucuSayisi + ' ipucu)' : '');
+    } else {
+      kutu.classList.add('kayip');
+      kutu.innerHTML = 'Bugün bulunamadı. Kelime: <b>' + kel + '</b>.';
+    }
+  }
+
   function istatistikGoster() {
     var ist = Depo.istatistikAl(durum.seviye);
     var bilgi = K.SEVIYE_BILGISI[durum.seviye];
 
     $('#istatistik-seviye').textContent = bilgi.ad + ' · yalnızca günlük bulmacalar';
+
+    // Bugünün günlük sonucu (üstte) ve paylaşım için sakla.
+    istGunluk = bugunkuGunlukOyun(durum.seviye);
+    gunSonucunuGoster(istGunluk);
     $('#ist-oynanan').textContent = ist.oynanan;
     $('#ist-oran').textContent = ist.oynanan ? Math.round((ist.kazanilan / ist.oynanan) * 100) : 0;
     $('#ist-seri').textContent = ist.seri;
@@ -3278,10 +3347,10 @@ select {
       kap.appendChild(satir);
     });
 
-    var gunlukBitti = durum.mod === 'gunluk' && durum.bitti;
-    $('#geri-sayim').hidden = !gunlukBitti;
-    $('#dugme-paylas-ist').classList.toggle('gizli', !durum.bitti);
-    if (gunlukBitti) geriSayimBaslat();
+    var bugunBitti = !!(istGunluk && istGunluk.bitti);
+    $('#geri-sayim').hidden = !bugunBitti;
+    $('#dugme-paylas-ist').classList.toggle('gizli', !bugunBitti);
+    if (bugunBitti) geriSayimBaslat();
 
     kutuAc('perde-istatistik');
   }
@@ -3352,6 +3421,14 @@ select {
 
   function kutuKapat(kimlik) {
     $('#' + kimlik).hidden = true;
+  }
+
+  // Nasıl oynanır penceresini açar. otomatik=true (ilk açılış) ise "bir daha
+  // gösterme" seçenekleri görünür; ? düğmesiyle açılınca görünmez.
+  function yardimAc(otomatik) {
+    $('#yardim-gizle-alani').hidden = !otomatik;
+    if (otomatik) $('#ayar-yardim-gizle').checked = false;
+    kutuAc('perde-yardim');
   }
 
   function acikKutu() {
@@ -3455,7 +3532,11 @@ select {
     // Üst bar
     $('.logo').addEventListener('click', menuyeDon);
     $('#dugme-takvim').addEventListener('click', menuyeDon);
-    $('#dugme-yardim').addEventListener('click', function () { kutuAc('perde-yardim'); });
+    $('#dugme-yardim').addEventListener('click', function () { yardimAc(false); });
+    $('#dugme-yardim-anladim').addEventListener('click', function () {
+      if ($('#ayar-yardim-gizle').checked) ayarlar = Depo.ayarKaydet('yardimGizle', true);
+      kutuKapat('perde-yardim');
+    });
     $('#dugme-seviye').addEventListener('click', function () { kutuAc('perde-seviye'); });
     $('#dugme-istatistik').addEventListener('click', istatistikGoster);
     $('#dugme-liderlik').addEventListener('click', liderlikAc);
@@ -3491,7 +3572,7 @@ select {
     // Araçlar
     $('#dugme-yeni').addEventListener('click', function () { oyunKur('alistirma', durum.seviye); });
     $('#dugme-paylas').addEventListener('click', paylas);
-    $('#dugme-paylas-ist').addEventListener('click', paylas);
+    $('#dugme-paylas-ist').addEventListener('click', function () { paylas(istGunluk); });
     $('#dugme-paylas-sonuc').addEventListener('click', paylas);
     $('#dugme-istatistik-sonuc').addEventListener('click', function () {
       kutuKapat('perde-sonuc');
