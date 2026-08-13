@@ -546,6 +546,19 @@ button { font: inherit; color: inherit; }
   margin-right: .25rem;
   font-size: .85rem;
 }
+/* Renk açıklamaları için dolu blok simgesi (madde işareti yerine). */
+.anahtar-liste.bloklu { list-style: none; padding-left: 0; }
+.yardim-blok {
+  display: inline-block;
+  width: 1.05em;
+  height: 1.05em;
+  border-radius: 4px;
+  vertical-align: -.18em;
+  margin-right: .4rem;
+}
+.yardim-blok.yesil { background: var(--yesil); }
+.yardim-blok.sari { background: var(--sari); }
+.yardim-blok.kirmizi { background: var(--kirmizi); }
 
 kbd {
   background: var(--tus);
@@ -1009,19 +1022,19 @@ select {
     <button class="kapat" type="button" data-kapat aria-label="Kapat">×</button>
     <h2 id="baslik-yardim">Nasıl oynanır?</h2>
 
-    <p>Gizli <strong>5 harfli Türkçe kelimeyi 8 tahminde</strong> bulmaya çalışın.</p>
+    <p><strong>Oyunun Amacı:</strong> 5 harfli gizli kelimeyi 8 tahmin içerisinde bulmaya çalışmak.</p>
 
     <p class="uyari">
-      <strong>Wordle'dan farkı:</strong> Hangi harfin doğru olduğu size söylenmez;
-      yalnızca <em>kaç tanesinin</em> doğru olduğu söylenir. Hangileri olduğunu
-      kendiniz çıkarmanız gerekir.
+      <strong>Not:</strong> Hangi harfin doğru olduğu size söylenmez; yalnızca
+      <em>kaç tanesinin</em> doğru olduğu söylenir. Hangileri olduğunu kendiniz
+      çıkarmanız gerekir.
     </p>
 
     <p>Her tahminin sağında üç sayı belirir:</p>
-    <ul class="anahtar-liste">
-      <li><span class="rozet yesil">2</span> harf hem doğru hem de <strong>doğru yerde</strong></li>
-      <li><span class="rozet sari">1</span> harf kelimede var ama <strong>yanlış yerde</strong></li>
-      <li><span class="rozet kirmizi">2</span> harf kelimede <strong>hiç yok</strong></li>
+    <ul class="anahtar-liste bloklu">
+      <li><span class="yardim-blok yesil" aria-hidden="true"></span> harf hem doğru hem de <strong>doğru yerde</strong></li>
+      <li><span class="yardim-blok sari" aria-hidden="true"></span> harf kelimede var ama <strong>yanlış yerde</strong></li>
+      <li><span class="yardim-blok kirmizi" aria-hidden="true"></span> harf kelimede <strong>hiç yok</strong></li>
     </ul>
 
     <h3>Örnek</h3>
@@ -1032,51 +1045,54 @@ select {
       <span class="rozet yesil">1</span><span class="rozet sari">1</span><span class="rozet kirmizi">3</span>
     </div>
     <p class="kucuk">
-      K doğru yerde (1 yeşil), A kelimede var ama yanlış yerde (1 sarı),
-      L, E ve M kelimede yok (3 kırmızı). Ama oyun size <em>hangisinin</em> hangisi
-      olduğunu söylemez; bunu tahminleri karşılaştırarak siz bulacaksınız!
+      K harfi doğru yerde (1 yeşil), A kelimede var ama yanlış yerde (1 sarı),
+      L, E ve M kelimede yok (3 kırmızı). Ancak unutmayın, oyun size hangi harfin
+      ne olduğunu söylemez. Bunu tahminler yaparak ve karşılaştırarak siz
+      bulacaksınız!
     </p>
 
-    <h3>Harfleri kendiniz boyayın</h3>
+    <h3>Harfleri kendiniz boyayabilirsiniz</h3>
     <p>
       Mantık yürütürken not tutabilirsiniz: bir harf kutusuna <strong>tıklayın</strong>,
       rengi sırayla değişsin.
     </p>
     <div class="ornek-satir">
-      <span class="ornek-kutu">K</span>
+      <span class="ornek-kutu">H</span>
       <span class="ornek-ok" aria-hidden="true">→</span>
-      <span class="ornek-kutu bk-kirmizi">K</span>
+      <span class="ornek-kutu bk-kirmizi">H</span>
       <span class="ornek-ok" aria-hidden="true">→</span>
-      <span class="ornek-kutu bk-sari">K</span>
+      <span class="ornek-kutu bk-sari">H</span>
       <span class="ornek-ok" aria-hidden="true">→</span>
-      <span class="ornek-kutu bk-yesil">K</span>
+      <span class="ornek-kutu bk-yesil">H</span>
       <span class="ornek-ok" aria-hidden="true">→</span>
-      <span class="ornek-kutu">K</span>
+      <span class="ornek-kutu">H</span>
     </div>
     <p class="kucuk">
-      Bu işaretler yalnızca sizin notunuzdur; oyunun verdiği sayıları değiştirmez
-      ve doğruluğu denetlenmez. Sayfayı kapatsanız da kaybolmaz.
+      Unutmayın, boyadığınız harfler klavyede de boyanır ve yalnızca sizin
+      notunuzdur. Oyunun verdiği kelimeyi değiştirmez ve doğruluğu denetlenmez.
+      Sayfayı kapatsanız da kaybolmaz.
     </p>
 
     <h3>Zorluk seviyeleri</h3>
     <ul class="anahtar-liste">
-      <li><strong>Kolay</strong>: aynı harf iki kez geçmez; <strong>j, f, v, ğ</strong> hiç kullanılmaz ve bu harfler klavyede baştan kırmızıdır.</li>
-      <li><strong>Standart</strong>: aynı harf iki kez geçmez; bütün harfler kullanılabilir.</li>
-      <li><strong>Zor</strong>: harfler tekrar edebilir, bütün harfler kullanılabilir.</li>
+      <li><strong>Kolay mod:</strong> aynı harf birden fazla geçmez. <strong>j, f, v ve ğ</strong> harfleri hiç kullanılmaz, bu harfler klavyede baştan kırmızıdır.</li>
+      <li><strong>Standart mod:</strong> aynı harf birden fazla geçmez; alfabedeki tüm harfler dahildir.</li>
+      <li><strong>Zor mod:</strong> bir harf birden fazla kez kullanılabilir, alfabedeki tüm harfler dahildir.</li>
     </ul>
 
     <h3>Klavye ve yardımcılar</h3>
     <ul class="anahtar-liste">
-      <li><strong>BOŞLUK</strong>: bilmediğiniz harfin yerine <code>_</code> koyar: <code>K_L_M</code>. Böylece aklınızdaki deseni tahta üzerinde görebilirsiniz.</li>
-      <li><span class="ikon" data-ikon="ipucu" aria-hidden="true"></span> <strong>İpucu</strong>: şimdiye kadarki bütün ipuçlarına uyan bir kelime önerir ve kaç kelimenin hâlâ mümkün olduğunu söyler. En az bir tahmin yapmış olmanız gerekir. (Yalnızca Sınırsız modda.)</li>
-      <li><span class="ikon" data-ikon="silgi" aria-hidden="true"></span> <strong>Silgi</strong>: yazmakta olduğunuz satırı ve kutulara tıklayarak koyduğunuz renk işaretlerini temizler.</li>
-      <li><span class="ikon" data-ikon="ara" aria-hidden="true"></span> <strong>Kelime ara</strong>: desene göre kelime arar; <code>_</code> herhangi bir harf demektir. Yalnızca <strong>Sınırsız</strong> modda vardır; günlük bulmacada herkes eşit koşullarda oynasın diye kapalıdır.</li>
-      <li>Bir tahmin 5 kırmızı alırsa o harflerin hiçbiri kelimede yoktur; 0 kırmızı alırsa hepsi kelimededir. Oyun bu iki kesin çıkarımı klavyede sizin için işaretler.</li>
+      <li><strong>BOŞLUK:</strong> bilmediğiniz harfin yerine <code>_</code> koyar: <code>K_L_M</code>. Böylece aklınızdaki deseni tahta üzerinde görebilirsiniz.</li>
+      <li><span class="ikon" data-ikon="ipucu" aria-hidden="true"></span> <strong>İpucu:</strong> Sadece sınırsız modda kullanılabilir. Şimdiye kadarki bütün ipuçlarına uyan bir kelime önerir ve kaç kelimenin hâlâ mümkün olduğunu söyler. (İpucu kullanmak için en az bir tahmin yapmış olmanız gerekir.)</li>
+      <li><span class="ikon" data-ikon="silgi" aria-hidden="true"></span> <strong>Silgi:</strong> yazmakta olduğunuz satırı ve kutulara tıklayarak koyduğunuz renk işaretlerini temizler.</li>
+      <li><span class="ikon" data-ikon="ara" aria-hidden="true"></span> <strong>Kelime ara:</strong> desene göre kelime arar; <code>_</code> herhangi bir harf demektir. Yalnızca <strong>Sınırsız</strong> modda vardır; günlük bulmacada herkes eşit koşullarda oynasın diye kapalıdır.</li>
+      <li>Bir tahmin 5 kırmızı alırsa o harflerin hiçbiri kelimede yoktur. Oyun bu durumda klavyede 5 harfi sizin için kırmızı olarak işaretler.</li>
     </ul>
 
     <p class="kucuk">
       Her gün, her zorluk seviyesi için yeni bir gizli kelime üretilir.
-      <strong>Sınırsız</strong> modda istediğiniz kadar oynayabilirsiniz (istatistiklere işlenmez).
+      <strong>Sınırsız</strong> modda istediğiniz kadar oynayabilirsiniz.
+      Sınırsız mod ve Arşiv modundaki oyunlarınız istatistiklere işlenmez.
     </p>
   </div>
 </div>
@@ -2560,15 +2576,15 @@ select {
     });
 
     // Oyuncunun kutulara koyduğu (ve otomatik/kesin) renkleri harf bazında topla:
-    // bir harf birden çok yerde boyanmışsa en olumlu renk kazanır (yeşil>sarı>kırmızı).
-    var oncelik = { yesil: 3, sari: 2, kirmizi: 1 };
+    // bir harf birden çok yerde boyanmışsa en son boyanan renk kazanır.
+    // (gecmis kronolojik işlenir, ardından aktif satır; böylece son işaret yansır.)
     var harfBoya = {};
     function boyaEkle(kelime, renkler) {
       if (!kelime) return;
       for (var i = 0; i < kelime.length; i++) {
         var h = kelime[i], r = renkler && renkler[i];
         if (!r) continue;
-        if (!harfBoya[h] || oncelik[r] > oncelik[harfBoya[h]]) harfBoya[h] = r;
+        harfBoya[h] = r;
       }
     }
     durum.gecmis.forEach(function (adim) {
