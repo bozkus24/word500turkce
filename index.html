@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>HARF500 — Türkçe kelime bulmacası</title>
+<title>HARF500 · Türkçe kelime bulmacası</title>
 <meta name="description" content="HARF500: gizli 5 harfli Türkçe kelimeyi 8 tahminde bul. Hangi harfin doğru olduğu değil, kaç harfin doğru olduğu söylenir. Ücretsiz Türkçe kelime bulmacası.">
 <meta name="theme-color" content="#141414">
 <meta name="robots" content="index,follow">
@@ -13,8 +13,8 @@
 <!-- Open Graph (WhatsApp, Facebook, LinkedIn önizlemesi) -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="HARF500">
-<meta property="og:title" content="HARF500 — Türkçe kelime bulmacası">
-<meta property="og:description" content="Gizli 5 harfli Türkçe kelimeyi 8 tahminde bul. Her gün yeni bulmaca — ücretsiz.">
+<meta property="og:title" content="HARF500 · Türkçe kelime bulmacası">
+<meta property="og:description" content="Gizli 5 harfli Türkçe kelimeyi 8 tahminde bul. Her gün yeni bulmaca, ücretsiz.">
 <meta property="og:url" content="https://word500tr.netlify.app/">
 <meta property="og:image" content="https://word500tr.netlify.app/og.png">
 <meta property="og:image:width" content="1200">
@@ -23,8 +23,8 @@
 
 <!-- Twitter/X kartı -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="HARF500 — Türkçe kelime bulmacası">
-<meta name="twitter:description" content="Gizli 5 harfli Türkçe kelimeyi 8 tahminde bul. Her gün yeni bulmaca — ücretsiz.">
+<meta name="twitter:title" content="HARF500 · Türkçe kelime bulmacası">
+<meta name="twitter:description" content="Gizli 5 harfli Türkçe kelimeyi 8 tahminde bul. Her gün yeni bulmaca, ücretsiz.">
 <meta name="twitter:image" content="https://word500tr.netlify.app/og.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='14' fill='%231f1f1f'/><rect x='10' y='10' width='38' height='38' rx='6' fill='%23f2f2f2'/><rect x='52' y='10' width='38' height='38' rx='6' fill='%234a9d54'/><rect x='10' y='52' width='38' height='38' rx='6' fill='%23cbb95e'/><rect x='52' y='52' width='38' height='38' rx='6' fill='%23d95757'/></svg>">
 <style>
@@ -64,6 +64,9 @@
 
   --vurgu: var(--yesil);
   --radius: 6px;
+
+  /* Zorluk göstergesinin çizgi rengi: karanlıkta beyaz, aydınlıkta siyah. */
+  --gosterge: #ffffff;
 }
 
 html[data-tema="acik"] {
@@ -83,6 +86,8 @@ html[data-tema="acik"] {
   --yesil: #3d8a47;
   --sari: #c0a63f;
   --kirmizi: #cf4b4b;
+
+  --gosterge: #161616;
 }
 
 /* Renk körlüğü için: yeşil/kırmızı yerine mavi/turuncu/gri ayrımı */
@@ -224,11 +229,16 @@ button { font: inherit; color: inherit; }
 }
 .ust-dugme:hover { background: var(--tus-vurgu); }
 
-/* Zorluk düğmesi seviyenin rengini taşır. */
+/* Zorluk düğmesinin arka planı seçili seviyenin rengini taşır; gösterge ikonu
+   siyah-beyaz çizgidir ve ibresi seviyenin bölmesini gösterir. */
 .ust-dugme[data-seviye="kolay"] { background: var(--yesil); border-color: var(--yesil); color: var(--yesil-yazi); }
 .ust-dugme[data-seviye="standart"] { background: var(--sari); border-color: var(--sari); color: var(--sari-yazi); }
 .ust-dugme[data-seviye="zor"] { background: var(--kirmizi); border-color: var(--kirmizi); color: var(--kirmizi-yazi); }
-.ust-dugme .ikon { width: 19px; height: 19px; }
+.ust-dugme .ikon { width: 21px; height: 21px; }
+/* Gösterge düğmesini flex ile ortalarız (grid yerleşiminde svg sağa kayıyordu). */
+#dugme-seviye { display: flex; align-items: center; justify-content: center; }
+#seviye-simge { display: flex; align-items: center; justify-content: center; color: var(--gosterge); }
+#seviye-simge svg { width: 24px; height: 24px; display: block; }
 
 /* --------------------------------------------------------------- Tahta */
 
@@ -899,6 +909,11 @@ select {
 .karsilama-alt a { color: var(--yazi-soluk); }
 .karsilama-alt a:hover { color: var(--yesil); }
 
+/* Oyun modu (takvim) penceresi: içerik ortalanır. */
+#perde-takvim .kutu { text-align: center; }
+#perde-takvim .karsilama-menu,
+#perde-takvim .karsilama-mod-not { margin-left: auto; margin-right: auto; }
+
 /* ------------------------------------------------------------ Duyarlılık */
 
 @media (max-width: 420px) {
@@ -931,36 +946,6 @@ select {
 <body>
 
 <!-- ---------------------------------------------------------- Karşılama -->
-<div class="karsilama" id="karsilama">
-  <div class="karsilama-ic">
-    <img class="karsilama-logo" src="logo.png" alt="" aria-hidden="true">
-    <h1 class="karsilama-baslik">HARF<span>500</span></h1>
-    <p class="karsilama-slogan">Gizli 5 harfli Türkçe kelimeyi 8 tahminde bul.</p>
-    <p class="karsilama-aciklama">
-      Wordle'dan farkı: hangi harfin doğru olduğu değil,
-      <strong>kaç tanesinin</strong> doğru olduğu söylenir.
-    </p>
-    <div class="karsilama-menu">
-      <button class="karsilama-oyna" id="dugme-gunluk" type="button">
-        <span class="ikon" data-ikon="gunluk" aria-hidden="true"></span> Günlük oyun
-      </button>
-      <button class="karsilama-oyna ikincil" id="dugme-alistirma" type="button">
-        <span class="ikon" data-ikon="alistirma" aria-hidden="true"></span> Alıştırma
-      </button>
-      <button class="karsilama-oyna ikincil" id="dugme-arsiv" type="button">
-        <span class="ikon" data-ikon="arsiv" aria-hidden="true"></span> Arşiv
-      </button>
-    </div>
-    <p class="karsilama-mod-not">Günlük: herkese aynı kelime · Alıştırma: sınırsız, istatistiğe işlenmez</p>
-    <button class="karsilama-yardim" id="dugme-karsilama-yardim" type="button">Nasıl oynanır?</button>
-    <p class="karsilama-bilgi" id="karsilama-bilgi"></p>
-    <div class="karsilama-alt">
-      <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik</a> ·
-      <a href="kosullar.html" target="_blank" rel="noopener">Koşullar</a>
-    </div>
-  </div>
-</div>
-
 <div class="uygulama">
 
   <header class="ustbar">
@@ -972,6 +957,9 @@ select {
     <div class="ustbar-marka" aria-hidden="true">HARF<span>500</span></div>
 
     <div class="ustbar-dugmeler">
+      <button class="ust-dugme" id="dugme-takvim" type="button" aria-label="Oyun modu (günlük, sınırsız, arşiv)" title="Oyun modu">
+        <span class="ikon" data-ikon="gunluk" aria-hidden="true"></span>
+      </button>
       <button class="ust-dugme" id="dugme-seviye" type="button" aria-label="Zorluk seviyesi" title="Zorluk seviyesi">
         <span id="seviye-simge" aria-hidden="true"></span>
       </button>
@@ -981,8 +969,8 @@ select {
       <button class="ust-dugme" id="dugme-istatistik" type="button" aria-label="İstatistikler" title="İstatistikler">
         <span class="ikon" data-ikon="istatistik" aria-hidden="true"></span>
       </button>
-      <button class="ust-dugme" id="dugme-tema" type="button" aria-label="Aydınlık / karanlık mod" title="Aydınlık / karanlık mod">
-        <span id="tema-simge" aria-hidden="true"></span>
+      <button class="ust-dugme" id="dugme-yardim" type="button" aria-label="Nasıl oynanır?" title="Nasıl oynanır?">
+        <span class="ikon" data-ikon="yardim" aria-hidden="true"></span>
       </button>
       <button class="ust-dugme" id="dugme-ayarlar" type="button" aria-label="Ayarlar" title="Ayarlar">
         <span class="ikon" data-ikon="ayarlar" aria-hidden="true"></span>
@@ -1024,7 +1012,7 @@ select {
     <p>Gizli <strong>5 harfli Türkçe kelimeyi 8 tahminde</strong> bulmaya çalışın.</p>
 
     <p class="uyari">
-      <strong>Wordle'dan farkı:</strong> Hangi harfin doğru olduğu size söylenmez —
+      <strong>Wordle'dan farkı:</strong> Hangi harfin doğru olduğu size söylenmez;
       yalnızca <em>kaç tanesinin</em> doğru olduğu söylenir. Hangileri olduğunu
       kendiniz çıkarmanız gerekir.
     </p>
@@ -1046,7 +1034,7 @@ select {
     <p class="kucuk">
       K doğru yerde (1 yeşil), A kelimede var ama yanlış yerde (1 sarı),
       L, E ve M kelimede yok (3 kırmızı). Ama oyun size <em>hangisinin</em> hangisi
-      olduğunu söylemez — bunu tahminleri karşılaştırarak siz bulacaksınız!
+      olduğunu söylemez; bunu tahminleri karşılaştırarak siz bulacaksınız!
     </p>
 
     <h3>Harfleri kendiniz boyayın</h3>
@@ -1072,23 +1060,23 @@ select {
 
     <h3>Zorluk seviyeleri</h3>
     <ul class="anahtar-liste">
-      <li><strong>Kolay</strong> — aynı harf iki kez geçmez; <strong>j, f, v, ğ</strong> hiç kullanılmaz ve bu harfler klavyede baştan kırmızıdır.</li>
-      <li><strong>Standart</strong> — aynı harf iki kez geçmez; bütün harfler kullanılabilir.</li>
-      <li><strong>Zor</strong> — harfler tekrar edebilir, bütün harfler kullanılabilir.</li>
+      <li><strong>Kolay</strong>: aynı harf iki kez geçmez; <strong>j, f, v, ğ</strong> hiç kullanılmaz ve bu harfler klavyede baştan kırmızıdır.</li>
+      <li><strong>Standart</strong>: aynı harf iki kez geçmez; bütün harfler kullanılabilir.</li>
+      <li><strong>Zor</strong>: harfler tekrar edebilir, bütün harfler kullanılabilir.</li>
     </ul>
 
     <h3>Klavye ve yardımcılar</h3>
     <ul class="anahtar-liste">
-      <li><strong>BOŞLUK</strong> — bilmediğiniz harfin yerine <code>_</code> koyar: <code>K_L_M</code>. Böylece aklınızdaki deseni tahta üzerinde görebilirsiniz.</li>
-      <li><span class="ikon" data-ikon="ipucu" aria-hidden="true"></span> <strong>İpucu</strong> — şimdiye kadarki bütün ipuçlarına uyan bir kelime önerir ve kaç kelimenin hâlâ mümkün olduğunu söyler. En az bir tahmin yapmış olmanız gerekir. (Yalnızca Alıştırma modunda.)</li>
-      <li><span class="ikon" data-ikon="silgi" aria-hidden="true"></span> <strong>Silgi</strong> — yazmakta olduğunuz satırı ve kutulara tıklayarak koyduğunuz renk işaretlerini temizler.</li>
-      <li><span class="ikon" data-ikon="ara" aria-hidden="true"></span> <strong>Kelime ara</strong> — desene göre kelime arar; <code>_</code> herhangi bir harf demektir. Yalnızca <strong>Alıştırma</strong> modunda vardır; günlük bulmacada herkes eşit koşullarda oynasın diye kapalıdır.</li>
+      <li><strong>BOŞLUK</strong>: bilmediğiniz harfin yerine <code>_</code> koyar: <code>K_L_M</code>. Böylece aklınızdaki deseni tahta üzerinde görebilirsiniz.</li>
+      <li><span class="ikon" data-ikon="ipucu" aria-hidden="true"></span> <strong>İpucu</strong>: şimdiye kadarki bütün ipuçlarına uyan bir kelime önerir ve kaç kelimenin hâlâ mümkün olduğunu söyler. En az bir tahmin yapmış olmanız gerekir. (Yalnızca Sınırsız modda.)</li>
+      <li><span class="ikon" data-ikon="silgi" aria-hidden="true"></span> <strong>Silgi</strong>: yazmakta olduğunuz satırı ve kutulara tıklayarak koyduğunuz renk işaretlerini temizler.</li>
+      <li><span class="ikon" data-ikon="ara" aria-hidden="true"></span> <strong>Kelime ara</strong>: desene göre kelime arar; <code>_</code> herhangi bir harf demektir. Yalnızca <strong>Sınırsız</strong> modda vardır; günlük bulmacada herkes eşit koşullarda oynasın diye kapalıdır.</li>
       <li>Bir tahmin 5 kırmızı alırsa o harflerin hiçbiri kelimede yoktur; 0 kırmızı alırsa hepsi kelimededir. Oyun bu iki kesin çıkarımı klavyede sizin için işaretler.</li>
     </ul>
 
     <p class="kucuk">
       Her gün, her zorluk seviyesi için yeni bir gizli kelime üretilir.
-      <strong>Alıştırma</strong> modunda istediğiniz kadar oynayabilirsiniz (istatistiklere işlenmez).
+      <strong>Sınırsız</strong> modda istediğiniz kadar oynayabilirsiniz (istatistiklere işlenmez).
     </p>
   </div>
 </div>
@@ -1100,6 +1088,25 @@ select {
     <h2 id="baslik-seviye">Zorluk seviyesi</h2>
     <div class="secenekler" id="seviye-secenekleri"></div>
     <p class="kucuk">Her seviyenin kendi günlük kelimesi ve kendi istatistikleri vardır.</p>
+  </div>
+</div>
+
+<!-- ------------------------------------------------------------- Oyun modu -->
+<div class="perde" id="perde-takvim" hidden>
+  <div class="kutu dar" role="dialog" aria-modal="true" aria-labelledby="baslik-takvim">
+    <button class="kapat" type="button" data-kapat aria-label="Kapat">×</button>
+    <h2 id="baslik-takvim">Oyun modu</h2>
+    <div class="karsilama-menu">
+      <button class="karsilama-oyna ikincil" id="dugme-gunluk" type="button">
+        <span class="ikon" data-ikon="gunluk" aria-hidden="true"></span> Günlük oyun
+      </button>
+      <button class="karsilama-oyna ikincil" id="dugme-alistirma" type="button">
+        <span class="ikon" data-ikon="sinirsiz" aria-hidden="true"></span> Sınırsız mod
+      </button>
+      <button class="karsilama-oyna ikincil" id="dugme-arsiv" type="button">
+        <span class="ikon" data-ikon="arsiv" aria-hidden="true"></span> Arşiv
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1163,6 +1170,17 @@ select {
 
     <div class="ayar">
       <div>
+        <b>Tema</b>
+        <p class="kucuk">Koyu veya açık.</p>
+      </div>
+      <select id="ayar-tema" aria-label="Tema">
+        <option value="koyu">Koyu</option>
+        <option value="acik">Açık</option>
+      </select>
+    </div>
+
+    <div class="ayar">
+      <div>
         <b>Renk körü modu</b>
       </div>
       <label class="anahtar">
@@ -1183,7 +1201,7 @@ select {
     </div>
 
     <p class="kucuk altbilgi">
-      HARF500 — Türkçe kelime tahmin oyunu.
+      HARF500 · Türkçe kelime tahmin oyunu.
     </p>
     <p class="kucuk" style="margin-top: .5rem">
       <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a> ·
@@ -1291,7 +1309,7 @@ select {
     <button class="kapat" type="button" data-kapat aria-label="Kapat">×</button>
     <h2 id="baslik-arsiv"><span class="ikon" data-ikon="arsiv" aria-hidden="true"></span> Arşiv</h2>
     <p class="kucuk">
-      Önceki günlerin bulmacaları — zorluk: <b id="arsiv-seviye"></b>.
+      Önceki günlerin bulmacaları · zorluk: <b id="arsiv-seviye"></b>.
       Arşiv oyunları istatistiğe ve seriye işlenmez.
     </p>
     <div class="arsiv-liste" id="arsiv-liste"></div>
@@ -2034,35 +2052,56 @@ select {
       : 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
     return '<svg class="ikon" viewBox="0 0 24 24" ' + oz + ' aria-hidden="true">' + ic + '</svg>';
   }
+  // Köşeli/kalın varyant: piksel marka yazısıyla uyumlu keskin köşeli ikonlar.
+  function svgK(ic) {
+    return '<svg class="ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="3" aria-hidden="true">' + ic + '</svg>';
+  }
   var IKON = {
-    gunluk: svg('<rect x="3" y="4.5" width="18" height="17" rx="2"/><path d="M8 2.5v4M16 2.5v4M3 9.5h18"/>'),
-    alistirma: svg('<path d="M21 12a9 9 0 1 1-2.7-6.4"/><path d="M21 3.5v5h-5"/>'),
-    arsiv: svg('<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"/><path d="M10 12h4"/>'),
-    liderlik: svg('<path d="M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 5H4v1a3 3 0 0 0 3 3M17 5h3v1a3 3 0 0 1-3 3"/><path d="M9 20h6M12 15v5"/>'),
-    istatistik: svg('<path d="M4 3v18h18"/><path d="M8 17v-4M13 17V8M18 17v-6"/>'),
-    ayarlar: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-2.7-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.1-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"/>'),
+    gunluk: svgK('<rect x="3.5" y="5" width="17" height="15.5"/><path d="M3.5 9.5H20.5M8 2.8V6.4M16 2.8V6.4"/>'),
+    alistirma: svgK('<path d="M19.5 6.5V11H15"/><path d="M19.5 11A7.5 7.5 0 1 0 17.6 16.9"/>'),
+    sinirsiz: '<svg class="ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 8.5a3.5 3.5 0 1 0 0 7c2.5 0 3.5-2 5.5-3.5s3-3.5 5.5-3.5a3.5 3.5 0 1 1 0 7c-2.5 0-3.5-2-5.5-3.5S9 8.5 6.5 8.5Z"/></svg>',
+    arsiv: svgK('<rect x="3.5" y="4.5" width="17" height="4"/><path d="M5.5 8.5V20H18.5V8.5"/><path d="M10 12.5H14"/>'),
+    liderlik: svgK('<path d="M7 4.5H17L16 10.5H8L7 4.5Z"/><path d="M7.3 5.5H4.3V7L7 9M16.7 5.5H19.7V7L17 9"/><path d="M9.5 20.5H14.5M12 10.5V20.5"/>'),
+    istatistik: svg('<rect x="3" y="11" width="4.5" height="9"/><rect x="9.75" y="4" width="4.5" height="16"/><rect x="16.5" y="8" width="4.5" height="12"/>', true),
+    ayarlar: '<svg class="ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-miterlimit="3" aria-hidden="true"><path d="M3.5 7H20.5M3.5 12H20.5M3.5 17H20.5"/><rect x="6.4" y="4.6" width="3.6" height="4.8" fill="currentColor" stroke="none"/><rect x="14" y="9.6" width="3.6" height="4.8" fill="currentColor" stroke="none"/><rect x="9.6" y="14.6" width="3.6" height="4.8" fill="currentColor" stroke="none"/></svg>',
     ay: '<svg class="ikon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.02 3.278 7.277 7.318 7.277q.792 0 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278z"/></svg>',
-    gunes: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
-    ipucu: svg('<path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.5.4.9 1 1 1.8h6c.1-.8.5-1.4 1-1.8A7 7 0 0 0 12 2Z"/>'),
-    ara: svg('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>'),
-    paylas: svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'),
-    giris: svg('<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/>'),
+    gunes: svgK('<rect x="8.5" y="8.5" width="7" height="7"/><path d="M12 2V4.4M12 19.6V22M2 12H4.4M19.6 12H22M5 5L6.7 6.7M17.3 17.3L19 19M19 5L17.3 6.7M6.7 17.3L5 19"/>'),
+    ipucu: svgK('<path d="M8 13.5L12 6L16 13.5V15H8V13.5Z"/><path d="M9.5 18H14.5M10.5 21H13.5"/>'),
+    yardim: '<svg class="ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M7.5 9 V6.5 H16.5 V12.5 H12 V15.5"/><rect x="10.7" y="18.3" width="2.6" height="2.6" fill="currentColor" stroke="none"/></svg>',
+    ara: svgK('<rect x="4" y="4" width="10.5" height="10.5"/><path d="M14.5 14.5L20.5 20.5"/>'),
+    paylas: svgK('<rect x="8.5" y="8.5" width="12" height="12"/><path d="M15.5 5.5V3.5H3.5V15.5H5.5"/>'),
+    giris: svgK('<path d="M13.5 3.5H20.5V20.5H13.5"/><path d="M3.5 12H15M11 7.5L15.5 12L11 16.5"/>'),
     seri: svg('<path d="M12 2c1.2 3 4 4.4 4 8a4 4 0 0 1-8 0c0-1 .3-1.8.8-2.6C7 9 6.5 11 6.5 13a5.5 5.5 0 0 0 11 0c0-4.6-4-6.6-5.5-11Z"/>', true),
     hiz: svg('<path d="M13 2 4 13h6l-1 9 9-11h-6l1-9Z"/>', true),
-    ortalama: svg('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/>'),
+    ortalama: svgK('<rect x="3.5" y="3.5" width="17" height="17"/><rect x="8" y="8" width="8" height="8"/><rect x="11" y="11" width="2" height="2" fill="currentColor" stroke="none"/>'),
     silgi: svg('<path d="m7 21-4.3-4.3a1.7 1.7 0 0 1 0-2.4l9.6-9.6a1.7 1.7 0 0 1 2.4 0l5.3 5.3a1.7 1.7 0 0 1 0 2.4L13 21"/><path d="M22 21H8"/><path d="m5 11 9 9"/>'),
     backspace: svg('<path d="M20 5H9l-6 7 6 7h11a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1Z"/><path d="m17 9-6 6M11 9l6 6"/>')
   };
 
-  // Zorluk göstergesi: seviyeye göre 1/2/3 dolu çubuk (emoji yüzler yerine).
+  // Zorluk göstergesi: siyah-beyaz çizgi (dolgusuz) yarım halka gösterge, üç
+  // bölmeye ayrılmış. İbre seçili seviyenin bölmesinin ortasını gösterir
+  // (kolay → sol, standart → orta, zor → sağ). Renk butonun arka planındadır.
   function seviyeIkon(seviye) {
-    var n = K.SEVIYELER.indexOf(seviye) + 1;
-    var ic = '';
-    for (var i = 0; i < 3; i++) {
-      var y = 7 + i * 5;
-      ic += '<rect x="' + (3.5 + i * 6.5) + '" y="' + (20 - y) + '" width="4.5" height="' + y +
-        '" rx="1" fill="currentColor"' + (i < n ? '' : ' opacity="0.3"') + '/>';
+    // Kare viewBox içinde ortalanır. Üç bölme içi dolu siyahtır; aralarında ince
+    // boşluk vardır. İbre, boşluktaki (arka plan renkli) alanda ilgili bölmeyi
+    // gösterir (kolay → sol, standart → orta, zor → sağ).
+    var cx = 12, cy = 16.5, Ro = 10.5, Ri = 6, renk = 'currentColor', g = 4;
+    function pt(aci, yc) {
+      var r = aci * Math.PI / 180;
+      return { x: +(cx + yc * Math.cos(r)).toFixed(2), y: +(cy - yc * Math.sin(r)).toFixed(2) };
     }
+    function bolme(aYuk, aAlt) {
+      var oa = pt(aYuk, Ro), ob = pt(aAlt, Ro), ib = pt(aAlt, Ri), ia = pt(aYuk, Ri);
+      return '<path d="M' + oa.x + ' ' + oa.y + ' A' + Ro + ' ' + Ro + ' 0 0 1 ' + ob.x + ' ' + ob.y +
+        ' L' + ib.x + ' ' + ib.y + ' A' + Ri + ' ' + Ri + ' 0 0 0 ' + ia.x + ' ' + ia.y + ' Z" fill="' + renk + '"/>';
+    }
+    var ic = bolme(180, 120 + g) + bolme(120 - g, 60 + g) + bolme(60 - g, 0);
+    // İbre: hollow (iç boşluk) içinde kalır; arka plan renginin üstünde görünür.
+    var idx = K.SEVIYELER.indexOf(seviye);
+    var aci = [150, 90, 30][idx < 0 ? 1 : idx];
+    var uc = pt(aci, Ri - 0.7);
+    ic += '<line x1="' + cx + '" y1="' + cy + '" x2="' + uc.x + '" y2="' + uc.y + '" stroke="' + renk + '" stroke-width="1.7" stroke-linecap="round"/>';
+    ic += '<circle cx="' + cx + '" cy="' + cy + '" r="1.6" fill="' + renk + '"/>';
     return '<svg class="ikon" viewBox="0 0 24 24" aria-hidden="true">' + ic + '</svg>';
   }
 
@@ -2114,7 +2153,7 @@ select {
     if (bilgi) bilgi.textContent = 'Bugünün bulmacası · #' + K.bulmacaNo();
   }
 
-  // Karşılama menüsünden seçilen modla oyuna geçiş.
+  // Takvim (oyun modu) menüsünden seçilen modla oyuna geçiş.
   function oyunaBasla(mod) {
     oyunKur(mod, durum ? durum.seviye : ayarlar.seviye);
     // Çözüm süresi saati, henüz başlanmamış günlük bulmacada oyuna girer girmez
@@ -2122,14 +2161,14 @@ select {
     if (mod === 'gunluk' && !durum.bitti && !durum.gecmis.length && !durum.baslangicZamani) {
       durum.baslangicZamani = Date.now();
     }
-    var k = $('#karsilama');
-    if (k) k.hidden = true;
+    kutuKapat('perde-takvim');
   }
 
-  // Üst bardaki logoya tıklayınca karşılama menüsüne dön.
+  // Üst bardaki takvim düğmesi (ve logo): oyun modu menüsünü açar.
   function menuyeDon() {
-    var k = $('#karsilama');
-    if (k) k.hidden = false;
+    var bilgi = $('#karsilama-bilgi');
+    if (bilgi) bilgi.textContent = 'Bugünün bulmacası · #' + K.bulmacaNo();
+    kutuAc('perde-takvim');
   }
 
   // ------------------------------------------------------------- Arşiv
@@ -2183,6 +2222,7 @@ select {
         kap.appendChild(satir);
       }
     }
+    kutuKapat('perde-takvim');
     kutuAc('perde-arsiv');
   }
 
@@ -2190,8 +2230,7 @@ select {
     var seviye = durum ? durum.seviye : ayarlar.seviye;
     oyunKur('arsiv', seviye, nodanTarih(Number(no)));
     kutuKapat('perde-arsiv');
-    var k = $('#karsilama');
-    if (k) k.hidden = true;
+    kutuKapat('perde-takvim');
   }
 
   // ------------------------------------------------------------ Oyun kurma
@@ -2295,9 +2334,18 @@ select {
     } else if (durum.mod === 'arsiv') {
       metin = 'Arşiv · #' + durum.bulmacaNo + ' · ' + bilgi.ad + ' · ' + tarihYazisi();
     } else {
-      metin = 'Alıştırma · ' + bilgi.ad + ' · istatistiklere işlenmez';
+      metin = 'Sınırsız mod · ' + bilgi.ad + ' · istatistiklere işlenmez';
     }
     $('#bulmaca-bilgi').textContent = metin;
+
+    // Üst bardaki takvim düğmesi, o an oynanan modun ikonunu gösterir
+    // (günlük → takvim, sınırsız → sonsuzluk, arşiv → kutu).
+    var takvimSimge = $('#dugme-takvim .ikon');
+    if (takvimSimge) {
+      var modIkon = { gunluk: 'gunluk', alistirma: 'sinirsiz', arsiv: 'arsiv' }[durum.mod] || 'gunluk';
+      takvimSimge.dataset.ikon = modIkon;
+      takvimSimge.innerHTML = IKON[modIkon];
+    }
   }
 
   // durum.tarih (YYYY-AA-GG) biçimini okunur tarihe çevirir; arşivde geçmiş
@@ -2738,7 +2786,7 @@ select {
     $('#arama-ozet').textContent = tumu.length === 0
       ? 'Eşleşen kelime yok' + suzgec + '.'
       : tumu.length + ' kelime eşleşti' + suzgec +
-        (tumu.length > sonuc.length ? ' — ilk ' + sonuc.length + ' tanesi gösteriliyor' : '') + '.';
+        (tumu.length > sonuc.length ? ', ilk ' + sonuc.length + ' tanesi gösteriliyor' : '') + '.';
 
     var kap = $('#arama-sonuc');
     kap.innerHTML = '';
@@ -2770,7 +2818,7 @@ select {
     } else {
       aciklama = 'Bu sefer olmadı. Yarın yeni bir kelime sizi bekliyor.';
     }
-    if (durum.mod === 'alistirma') aciklama += ' Alıştırma modu istatistiklere işlenmez.';
+    if (durum.mod === 'alistirma') aciklama += ' Sınırsız mod istatistiklere işlenmez.';
     $('#sonuc-aciklama').textContent = aciklama;
 
     var gunluk = durum.mod === 'gunluk';
@@ -3001,7 +3049,7 @@ select {
   var LIDERLIK_TURLERI = [
     { anahtar: 'seri', ad: 'Seri', ikon: 'seri', aciklama: 'Güncel seri uzunluğuna göre ilk 20.' },
     { anahtar: 'hiz', ad: 'Hız', ikon: 'hiz', aciklama: 'En kısa çözüm süresine göre ilk 20 (eşitlikte az tahmin öne geçer).' },
-    { anahtar: 'ortalama', ad: 'Ortalama', ikon: 'ortalama', aciklama: 'En düşük tahmin ortalamasına göre ilk 20 — en az 10 günlük bulmaca çözenler.' }
+    { anahtar: 'ortalama', ad: 'Ortalama', ikon: 'ortalama', aciklama: 'En düşük tahmin ortalamasına göre ilk 20 · en az 10 günlük bulmaca çözenler.' }
   ];
 
   function liderlikKur() {
@@ -3310,19 +3358,7 @@ select {
     document.documentElement.dataset.kontrast = ayarlar.yuksekKontrast ? 'acik' : 'kapali';
     var renk = document.querySelector('meta[name="theme-color"]');
     if (renk) renk.setAttribute('content', tema === 'koyu' ? '#141414' : '#eceef1');
-    // Üst bardaki düğme, tıklanınca geçilecek modun simgesini gösterir.
-    var simge = $('#tema-simge');
-    if (simge) simge.innerHTML = tema === 'koyu' ? IKON.gunes : IKON.ay;
     $('#klavye').classList.toggle('gizli', !ayarlar.klavyeAcik);
-  }
-
-  // Üst bar düğmesi: aydınlık ile karanlık arasında geçiş yapar.
-  function temaDegistir() {
-    var yeni = etkinTema() === 'koyu' ? 'acik' : 'koyu';
-    ayarlar = Depo.ayarKaydet('tema', yeni);
-    temaUygula();
-    var secim = $('#ayar-tema');
-    if (secim) secim.value = yeni; // ayarlar açıksa senkron kalsın
   }
 
   // ------------------------------------------------------------ Olaylar
@@ -3384,7 +3420,9 @@ select {
         return;
       }
       if (olay.key === 'Backspace') { harfSil(); olay.preventDefault(); return; }
-      if (olay.key === ' ') {
+      if (olay.key === ' ' || olay.key === '-') {
+        // Boşluk ve kısa çizgi (-) yer tutucu ekler: örn. "--lem" gibi desen kurmak için.
+        // Kısa çizgi ekran klavyesinde yok; yalnızca fiziksel klavye kısayolu.
         if (hedef && hedef.tagName === 'BUTTON') return;
         harfEkle(K.YER_TUTUCU);
         olay.preventDefault();
@@ -3400,16 +3438,16 @@ select {
 
     // Üst bar
     $('.logo').addEventListener('click', menuyeDon);
+    $('#dugme-takvim').addEventListener('click', menuyeDon);
+    $('#dugme-yardim').addEventListener('click', function () { kutuAc('perde-yardim'); });
     $('#dugme-seviye').addEventListener('click', function () { kutuAc('perde-seviye'); });
     $('#dugme-istatistik').addEventListener('click', istatistikGoster);
-    $('#dugme-tema').addEventListener('click', temaDegistir);
     $('#dugme-liderlik').addEventListener('click', liderlikAc);
 
-    // Karşılama menüsü
+    // Oyun modu menüsü (takvim)
     $('#dugme-gunluk').addEventListener('click', function () { oyunaBasla('gunluk'); });
     $('#dugme-alistirma').addEventListener('click', function () { oyunaBasla('alistirma'); });
     $('#dugme-arsiv').addEventListener('click', arsivAc);
-    $('#dugme-karsilama-yardim').addEventListener('click', function () { kutuAc('perde-yardim'); });
 
     // Arşiv listesinden bir güne tıklayınca o bulmacayı aç.
     $('#arsiv-liste').addEventListener('click', function (olay) {
@@ -3417,6 +3455,7 @@ select {
       if (satir) arsivOyunuAc(satir.dataset.no);
     });
     $('#dugme-ayarlar').addEventListener('click', function () {
+      $('#ayar-tema').value = ayarlar.tema;
       $('#ayar-kontrast').checked = ayarlar.yuksekKontrast;
       $('#ayar-klavye').checked = ayarlar.klavyeAcik;
       kutuAc('perde-ayarlar');
@@ -3456,6 +3495,10 @@ select {
     });
 
     // Ayarlar
+    $('#ayar-tema').addEventListener('change', function () {
+      ayarlar = Depo.ayarKaydet('tema', this.value);
+      temaUygula();
+    });
     $('#ayar-kontrast').addEventListener('change', function () {
       ayarlar = Depo.ayarKaydet('yuksekKontrast', this.checked);
       temaUygula();
