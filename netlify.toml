@@ -1,12 +1,11 @@
-# Netlify yapılandırması — word500tr
+# Netlify yapılandırması — word500tr (HARF500)
 # Statik site; derleme adımı yok, kök dizin olduğu gibi yayımlanır.
 
 [build]
   publish = "."
   command = ""
 
-# Temel güvenlik başlıkları. (Firebase'i engellememek için katı bir
-# Content-Security-Policy bilerek eklenmedi.)
+# Temel güvenlik başlıkları.
 [[headers]]
   for = "/*"
   [headers.values]
@@ -15,14 +14,8 @@
     X-Frame-Options = "SAMEORIGIN"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
 
-# HTML ve yapılandırma her zaman taze gelsin (anahtar güncellemeleri anında
-# yansısın); statik varlıklar tarayıcıda bir süre önbelleğe alınabilir.
+# HTML her zaman taze gelsin; statik varlıklar bir süre önbelleğe alınabilir.
 [[headers]]
   for = "/*.html"
-  [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
-
-[[headers]]
-  for = "/firebase-config.js"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
