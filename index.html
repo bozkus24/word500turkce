@@ -159,7 +159,7 @@ button { font: inherit; color: inherit; }
   padding: 8px 10px;
 }
 
-.logo { display: flex; align-items: center; gap: 9px; min-width: 0; cursor: pointer; }
+.logo { display: flex; align-items: center; gap: 9px; min-width: 0; cursor: pointer; text-decoration: none; color: inherit; }
 .logo-img { height: 32px; width: auto; display: block; }
 /* Üst bardaki marka yazısı: logonun hemen sağına yapışır, düğmeler sağa itilir. */
 .ustbar-marka {
@@ -941,10 +941,10 @@ select {
 <div class="uygulama">
 
   <header class="ustbar">
-    <div class="logo" title="Ana menü">
+    <a class="logo" href="/" title="Ana sayfa" aria-label="Ana sayfaya dön">
       <img class="logo-img" src="logo.png" alt="HARF500" width="206" height="220">
       <h1 class="gorunmez-baslik">HARF500</h1>
-    </div>
+    </a>
 
     <div class="ustbar-marka" aria-hidden="true">HARF<span>500</span></div>
 
@@ -2068,16 +2068,6 @@ select {
     if (!ayarlar.yardimGizle) yardimAc(true);
   }
 
-  // Seçilen modla oyuna geçiş (logo -> günlük).
-  function oyunaBasla(mod) {
-    oyunKur(mod, durum ? durum.seviye : ayarlar.seviye);
-    // Çözüm süresi saati, henüz başlanmamış günlük bulmacada oyuna girer girmez
-    // başlar (böylece ilk tahminde kazanmak da düşünme süresini içerir).
-    if (mod === 'gunluk' && !durum.bitti && !durum.gecmis.length && !durum.baslangicZamani) {
-      durum.baslangicZamani = Date.now();
-    }
-  }
-
   // ------------------------------------------------------------- Arşiv
 
   // Bulmaca numarasından o güne ait tarihi üretir (Türkiye saatiyle güvenli:
@@ -3076,7 +3066,6 @@ select {
     });
 
     // Üst bar
-    $('.logo').addEventListener('click', function () { oyunaBasla('gunluk'); }); // logo: bugünün bulmacası
     $('#dugme-takvim').addEventListener('click', arsivAc); // doğrudan arşivi aç
     $('#dugme-yardim').addEventListener('click', function () { yardimAc(false); });
     $('#dugme-yardim-anladim').addEventListener('click', function () {
