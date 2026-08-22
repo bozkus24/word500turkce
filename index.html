@@ -146,6 +146,15 @@ button { font: inherit; color: inherit; }
   padding: 12px;
 }
 
+/* Bulmaca bölümü bara bitişik: aradaki boşluk ve köşe yuvarlaklığı kalkar,
+   yanlardan tam genişliğe oturur; bardan yalnızca üstündeki ince çizgiyle
+   (barın alt kenarı) ayrılır, böylece bar belirgin kalır. */
+main.panel {
+  margin: -10px -10px 0;
+  border: 0;
+  border-radius: 0;
+}
+
 /* -------------------------------------------------------------- Üst bar */
 
 .ustbar {
@@ -154,13 +163,18 @@ button { font: inherit; color: inherit; }
   justify-content: space-between;
   gap: .5rem;
   background: var(--panel);
-  border: 1px solid var(--cizgi);
-  border-radius: 12px;
-  padding: 8px 10px;
+  /* Üstten ve yanlardan bitişik: kapsayıcı iç boşluğunu negatif kenarla iptal
+     eder, köşe/kenar yuvarlaklığını kaldırır; oyundan yalnızca alttaki ince
+     çizgiyle ayrılır. */
+  border: 0;
+  border-bottom: 1px solid var(--cizgi);
+  border-radius: 0;
+  margin: -10px -10px 0;
+  padding: calc(10px + env(safe-area-inset-top)) 12px 10px;
 }
 
 .logo { display: flex; align-items: center; gap: 9px; min-width: 0; cursor: pointer; }
-.logo-img { height: 32px; width: auto; display: block; }
+.logo-img { height: 36px; width: auto; display: block; }
 /* Üst bardaki marka yazısı: logonun hemen sağına yapışır, düğmeler sağa itilir. */
 .ustbar-marka {
   flex: 0 1 auto;
@@ -214,11 +228,16 @@ button { font: inherit; color: inherit; }
 .ustbar-dugmeler { display: flex; gap: 5px; flex: 0 0 auto; margin-left: auto; }
 
 .ust-dugme {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
+  /* Grid place-items svg'yi ~birkaç px kaydırabiliyordu; flex ile içerik
+     kutuya tam ortalanır (mobilde "yamuk" görünmesini önler). */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
   flex: 0 0 auto;
+  padding: 0;
+  line-height: 1;
   border: 1px solid var(--cizgi);
   border-radius: 8px;
   background: var(--tus);
@@ -234,7 +253,7 @@ button { font: inherit; color: inherit; }
 .ust-dugme[data-seviye="kolay"] { background: var(--yesil); border-color: var(--yesil); color: var(--yesil-yazi); }
 .ust-dugme[data-seviye="standart"] { background: var(--sari); border-color: var(--sari); color: var(--sari-yazi); }
 .ust-dugme[data-seviye="zor"] { background: var(--kirmizi); border-color: var(--kirmizi); color: var(--kirmizi-yazi); }
-.ust-dugme .ikon { width: 21px; height: 21px; }
+.ust-dugme .ikon { width: 23px; height: 23px; vertical-align: 0; }
 /* Gösterge düğmesini flex ile ortalarız (grid yerleşiminde svg sağa kayıyordu). */
 #dugme-seviye { display: flex; align-items: center; justify-content: center; }
 #seviye-simge { display: flex; align-items: center; justify-content: center; color: var(--gosterge); }
@@ -392,10 +411,21 @@ button { font: inherit; color: inherit; }
 .arac.vurgulu { background: var(--yesil); border-color: var(--yesil); color: var(--yesil-yazi); }
 .arac.tehlike { color: var(--kirmizi); }
 .gizli { display: none !important; }
+/* Paylaş şeridinde görünür buton yoksa şeridi tamamen kaldır: aksi halde boş
+   şerit, klavyeyle bulmaca arasında boşluk bırakırdı (klavye bitişik olmaz). */
+.arac-seridi:not(:has(.arac:not(.gizli))) { display: none; }
 
 /* ------------------------------------------------------------- Klavye */
 
-.klavye-panel { padding: 8px; }
+/* Klavye de bulmacayla bitişik: yanlardan tam genişlik, köşesiz, üstteki ince
+   çizgiyle ayrık ve alt kenara oturur (güvenli alan payı içeride korunur). */
+.klavye-panel {
+  margin: -10px -10px calc(-10px - env(safe-area-inset-bottom));
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  border: 0;
+  border-top: 1px solid var(--cizgi);
+  border-radius: 0;
+}
 
 .klavye {
   display: flex;
@@ -907,10 +937,15 @@ select {
 @media (max-width: 420px) {
   .uygulama { padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); gap: 7px; }
   .panel { padding: 8px; }
-  .logo-img { height: 28px; }
-  .ustbar-marka { font-size: 15px; }
-  .ust-dugme { width: 30px; height: 30px; font-size: 13px; }
-  .ustbar-dugmeler { gap: 4px; }
+  /* Kapsayıcı iç boşluğu burada 6px; bar negatif kenarı da ona eşitlenir. */
+  .ustbar { margin: -6px -6px 0; padding: calc(8px + env(safe-area-inset-top)) 10px 8px; }
+  main.panel { margin: -7px -6px 0; }
+  .klavye-panel { margin: -7px -6px calc(-6px - env(safe-area-inset-bottom)); }
+  .logo-img { height: 32px; }
+  .ustbar-marka { font-size: 13px; }
+  .ust-dugme { width: 34px; height: 34px; font-size: 13px; }
+  .ust-dugme .ikon { width: 21px; height: 21px; }
+  .ustbar-dugmeler { gap: 5px; }
   .tus { height: 44px; font-size: 13px; }
 }
 
@@ -1619,16 +1654,23 @@ select {
 
   // ------------------------------------------------------------- Paylaşım
 
-  // Her satır, o tahminin yeşil/sarı/kırmızı sayısı kadar kareyle gösterilir.
+  // Bir sayıyı klavye rakamı (keycap) emojisine çevirir: 4 -> 4️⃣.
+  var RAKAM_EMOJI = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
+  function rakamEmojisi(n) {
+    return String(n).split('').map(function (d) { return RAKAM_EMOJI[+d]; }).join('');
+  }
+
+  // Her satır, o tahminin yeşil/sarı/kırmızı sayısını rakam emojisiyle gösterir.
   function satirEmojisi(skor) {
-    return '🟩'.repeat(skor.yesil) + '🟨'.repeat(skor.sari) + '🟥'.repeat(skor.kirmizi);
+    return rakamEmojisi(skor.yesil) + rakamEmojisi(skor.sari) + rakamEmojisi(skor.kirmizi);
   }
 
   function paylasimMetni(durum) {
-    var baslik = 'HARF500 #' + durum.bulmacaNo + ' ' + SEVIYE_BILGISI[durum.seviye].ad;
-    var sonuc = durum.kazandi ? durum.gecmis.length + '/' + TAHMIN_HAKKI : 'X/' + TAHMIN_HAKKI;
+    var baslik = 'Harf500 #' + durum.bulmacaNo;
+    var sonuc = SEVIYE_BILGISI[durum.seviye].ad + ' - ' +
+      (durum.kazandi ? durum.gecmis.length + '/' + TAHMIN_HAKKI : 'X/' + TAHMIN_HAKKI);
     var satirlar = durum.gecmis.map(function (g) { return satirEmojisi(g.skor); });
-    return [baslik + ' ' + sonuc, ''].concat(satirlar).concat(['', durum.adres || '']).join('\n').trim();
+    return [baslik, sonuc].concat(satirlar).concat(['', durum.adres || '']).join('\n').trim();
   }
 
   var cekirdek = {
@@ -2769,13 +2811,13 @@ select {
       var ist = Depo.istatistikAl(oyun.seviye);
       if (ist.seri > 1) metin += '\n' + ist.seri + ' gün seri';
     }
-    var adres = window.location.origin + window.location.pathname;
+    var adres = 'https://trpuzzle.com/harf500/';
 
     // Tek buton: destekleyen her cihaz/tarayıcıda sistem paylaş menüsünü açar
     // (WhatsApp, X, Instagram, Telegram, kopyala…); kullanıcı mecrasını seçer.
     // Desteklenmeyen yerlerde panoya kopyalar.
     if (navigator.share) {
-      navigator.share({ title: 'HARF500', text: metin, url: adres }).catch(function (hata) {
+      navigator.share({ title: 'Harf500', text: metin, url: adres }).catch(function (hata) {
         if (hata && hata.name === 'AbortError') return; // kullanıcı iptal etti
         panoyaKopyala(metin + '\n' + adres);
       });
