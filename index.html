@@ -16,8 +16,8 @@
 <meta property="og:title" content="Harf500">
 <meta property="og:description" content="Harfle gibi. Ancak hangi harfin doğru olduğu söylenmez.">
 <meta property="og:image" content="https://trpuzzle.com/harf500/og.png">
-<meta property="og:image:width" content="512">
-<meta property="og:image:height" content="512">
+<meta property="og:image:width" content="256">
+<meta property="og:image:height" content="256">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Harf500">
 <meta name="twitter:description" content="Harfle gibi. Ancak hangi harfin doğru olduğu söylenmez.">
@@ -27,7 +27,6 @@
 <meta property="og:locale" content="tr_TR">
 
 <!-- Twitter/X kartı -->
-<rect width='100' height='100' rx='14' fill='%231f1f1f'/><rect x='10' y='10' width='38' height='38' rx='6' fill='%23f2f2f2'/><rect x='52' y='10' width='38' height='38' rx='6' fill='%234a9d54'/><rect x='10' y='52' width='38' height='38' rx='6' fill='%23cbb95e'/><rect x='52' y='52' width='38' height='38' rx='6' fill='%23d95757'/></svg>">
 <style>
 /* word500tr - Türkçe kelime bulmacası */
 
@@ -382,13 +381,6 @@ main.panel {
 
 /* ------------------------------------------------------------ Araçlar */
 
-.arac-seridi {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
-}
-
 .arac {
   border: 1px solid var(--cizgi);
   background: var(--panel);
@@ -402,12 +394,7 @@ main.panel {
 .arac:hover:not(:disabled) { background: var(--tus); }
 .arac:disabled { opacity: .45; cursor: not-allowed; }
 .arac.vurgulu { background: var(--yesil); border-color: var(--yesil); color: var(--yesil-yazi); }
-.arac.tehlike { color: var(--kirmizi); }
 .gizli { display: none !important; }
-/* Paylaş şeridinde görünür buton yoksa şeridi tamamen kaldır: aksi halde boş
-   şerit, klavyeyle bulmaca arasında boşluk bırakırdı (klavye bitişik olmaz). */
-.arac-seridi:not(:has(.arac:not(.gizli))) { display: none; }
-
 /* ------------------------------------------------------------- Klavye */
 
 /* Klavye de bulmacayla bitişik: yanlardan tam genişlik, köşesiz, üstteki ince
@@ -998,7 +985,7 @@ html.tp-splash-acik{background:#fff}
 #tp-splash .tp-drawer-nav a:hover{background:rgba(0,0,0,.05)}
 #tp-splash .tp-sw{width:12px;height:12px;border-radius:50%;flex-shrink:0}
 #tp-splash .tp-nav-sep{height:1px;background:rgba(0,0,0,.1);margin:9px 14px}
-#tp-splash .tp-drawer-nav a.tp-nav-page{color:#5b6068;font-size:14.5px;padding-left:39px}
+#tp-splash .tp-drawer-nav a.tp-nav-page{color:#5b6068;font-size:14.5px;padding-left:14px}
 #tp-splash .tp-nav-row{list-style:none;display:flex;align-items:center;gap:6px;padding:3px 8px 3px 12px;border-radius:10px;font-weight:600;font-size:15.5px;color:#1d1f24;text-decoration:none}
 #tp-splash .tp-nav-row::-webkit-details-marker{display:none}
 #tp-splash .tp-nav-row:hover{background:rgba(0,0,0,.05)}
@@ -1056,6 +1043,7 @@ html.tp-splash-acik{background:#fff}
   font-family:inherit;touch-action:manipulation}
 #tp-splash .tp-play:active{transform:translateY(1px)}
 #tp-splash .tp-meta{font-size:14px;line-height:1.8;color:#5b6068;margin-top:6px}
+#tp-splash .tp-by{display:block}
 #tp-splash #tpDate{font-weight:700}
 @media(min-width:800px){
   #tp-splash .tp-name{font-size:60px}
@@ -1137,7 +1125,7 @@ html.tp-splash-acik{background:#fff}
       <details class="tp-nav-item">
         <summary class="tp-nav-row">
           <a class="tp-nav-main" href="/kesme/">
-            <span class="tp-nav-ico" style="--ico-size:39px;color:#cc4437"><svg viewBox="0 0 100 100"><rect x="15.25" y="15.25" width="69.5" height="69.5" rx="6.75" fill="currentColor" fill-opacity="0.32" stroke="#1d1f24" stroke-width="4.5" stroke-linejoin="round"/><path d="M15.25 84.75 L84.75 15.25" stroke="#1d1f24" stroke-width="4" stroke-dasharray="10 7.65757"/></svg></span>
+            <span class="tp-nav-ico" style="--ico-size:39px;color:#cc4437"><svg viewBox="0 0 100 100"><rect x="15.25" y="15.25" width="69.5" height="69.5" rx="6.75" fill="currentColor" fill-opacity="0.32" stroke="#1d1f24" stroke-width="4.5" stroke-linejoin="round"/><path d="M17.0503 82.9497 L82.9497 17.0503" stroke="#1d1f24" stroke-width="4" stroke-linecap="butt" stroke-dasharray="9.4819 7.2609"/></svg></span>
             <span class="tp-nav-name">Kesme</span>
           </a>
           <span class="tp-nav-toggle" aria-label="Kesme bağlantıları"><svg class="tp-nav-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
@@ -1296,6 +1284,7 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
     <div class="tp-meta">
       <span id="tpDate"></span><br>
       <span id="tpNo"></span>
+      <span class="tp-by">Hazırlayan: TrPuzzle</span>
     </div>
   </div>
 </div>
@@ -1331,12 +1320,6 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
     <p class="bulmaca-bilgi" id="bulmaca-bilgi"></p>
     <div class="tahta" id="tahta" role="grid" aria-label="Tahmin tahtası"></div>
   </main>
-
-  <div class="arac-seridi">
-    <button class="arac vurgulu gizli" id="dugme-paylas" type="button">
-      <span class="ikon" data-ikon="paylas" aria-hidden="true"></span> Sonucu paylaş
-    </button>
-  </div>
 
   <div class="panel klavye-panel">
     <div class="klavye" id="klavye" role="group" aria-label="Klavye"></div>
@@ -1451,7 +1434,7 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
       <div class="istatistik"><b id="ist-enuzun">0</b><span>En uzun seri</span></div>
     </div>
 
-    <h3>Tahmin dağılımı</h3>
+    <h3>TAHMİN DAĞILIMI</h3>
     <div class="dagilim" id="dagilim"></div>
 
     <div class="geri-sayim" id="geri-sayim" hidden>
@@ -1463,7 +1446,6 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
       <button class="arac vurgulu" id="dugme-paylas-ist" type="button">
         <span class="ikon" data-ikon="paylas" aria-hidden="true"></span> Sonucu paylaş
       </button>
-      <button class="arac tehlike" id="dugme-sifirla" type="button">İstatistikleri sıfırla</button>
     </div>
   </div>
 </div>
@@ -2095,13 +2077,6 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
     }
   }
 
-  function sil(anahtar) {
-    try {
-      if (kullanilabilir) window.localStorage.removeItem(ONEK + anahtar);
-    } catch (hata) { /* yoksay */ }
-    delete yedekBellek[anahtar];
-  }
-
   // ------------------------------------------------------------- Ayarlar
 
   var VARSAYILAN_AYARLAR = {
@@ -2178,11 +2153,6 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
     ist.sonBulmaca = bulmacaNo;
     yaz('istatistik.' + seviye, ist);
     return ist;
-  }
-
-  function istatistikSifirla(seviye) {
-    sil('istatistik.' + seviye);
-    return bosIstatistik();
   }
 
   // Arşivde çözülen bulmaca numaraları (seviyeye göre) - istatistiği etkilemez,
@@ -2271,7 +2241,6 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
     bosIstatistik: bosIstatistik,
     istatistikAl: istatistikAl,
     sonucKaydet: sonucKaydet,
-    istatistikSifirla: istatistikSifirla,
     tumIstatistikleriAl: tumIstatistikleriAl,
     istatistikYaz: istatistikYaz,
     arsivCozulenAl: arsivCozulenAl,
@@ -3008,7 +2977,6 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
 
   function araclariGuncelle() {
     // Paylaş butonu yalnızca günlük bulmaca bitince görünür (arşivde paylaşım yok).
-    $('#dugme-paylas').classList.toggle('gizli', !durum.bitti || durum.mod !== 'gunluk');
   }
 
   function ipucuVer() {
@@ -3423,7 +3391,6 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
     // splash script'i ve window.Harf500.seviyeKur.
 
     // Araçlar
-    $('#dugme-paylas').addEventListener('click', paylas);
     $('#dugme-paylas-ist').addEventListener('click', function () { paylas(istGunluk); });
     $('#dugme-paylas-sonuc').addEventListener('click', paylas);
     $('#dugme-istatistik-sonuc').addEventListener('click', function () {
@@ -3454,13 +3421,6 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
       ayarlar = Depo.ayarKaydet('klavyeAcik', this.checked);
       temaUygula();
     });
-    $('#dugme-sifirla').addEventListener('click', function () {
-      if (!window.confirm(K.SEVIYE_BILGISI[durum.seviye].ad + ' seviyesinin istatistikleri silinsin mi?')) return;
-      Depo.istatistikSifirla(durum.seviye);
-      istatistikGoster();
-      bildir('İstatistikler sıfırlandı');
-    });
-
     // Arama alanları
     ['#arama-desen', '#arama-var', '#arama-yok'].forEach(function (secici) {
       $(secici).addEventListener('input', aramaYap);
