@@ -178,6 +178,7 @@ main.panel {
 .logo-img { height: 36px; width: auto; display: block; }
 /* Üst bardaki marka yazısı: logonun hemen sağına yapışır, düğmeler sağa itilir. */
 .ustbar-marka {
+  text-decoration: none;
   flex: 0 1 auto;
   min-width: 0;
   font-family: 'Press Start 2P', system-ui, sans-serif;
@@ -1293,12 +1294,12 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
 <div class="uygulama">
 
   <header class="ustbar">
-    <a class="logo" href="/" title="Ana sayfa" aria-label="Ana sayfaya dön">
+    <a class="logo" href="https://trpuzzle.com/" title="Ana sayfa" aria-label="Ana sayfaya dön">
       <img class="logo-img" src="logo.png" alt="HARF500" width="206" height="220">
       <h1 class="gorunmez-baslik">HARF500</h1>
     </a>
 
-    <div class="ustbar-marka" aria-hidden="true">HARF<span>500</span></div>
+    <a class="ustbar-marka" href="https://trpuzzle.com/" title="Ana sayfa" aria-label="Harf500 · Ana sayfaya dön">HARF<span>500</span></a>
 
     <div class="ustbar-dugmeler">
       <button class="ust-dugme" id="dugme-takvim" type="button" aria-label="Arşiv (önceki günler)" title="Arşiv">
