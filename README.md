@@ -1,9 +1,10 @@
-# HARF500 — Türkçe kelime bulmacası
+# HARF500 · Türkçe kelime bulmacası
 
 Gizli **5 harfli Türkçe kelimeyi 8 tahminde** bulmaya çalıştığınız bir kelime
-oyunu.
+oyunu. Türk alfabesindeki tüm harfler kullanılabilir; aynı harf gizli kelimede
+birden fazla kez geçebilir. Her gün herkes için aynı kelime açılır.
 
-**Wordle'dan farkı:** Hangi harfin doğru olduğu size söylenmez — yalnızca *kaç
+**Wordle'dan farkı:** Hangi harfin doğru olduğu size söylenmez; yalnızca *kaç
 tanesinin* doğru olduğu söylenir. Hangileri olduğunu tahminleri karşılaştırarak
 kendiniz çıkarırsınız.
 
@@ -13,16 +14,17 @@ Her tahminin sağında üç sayı belirir:
 
 - 🟢 **Yeşil** — harf hem doğru hem de doğru yerde
 - 🟡 **Sarı** — harf kelimede var ama yanlış yerde
-- 🔴 **Kırmızı** — harf kelimede hiç yok
+- 🔴 **Kırmızı** — harf kelimede yok veya fazladan tekrar edilmiş
+
+Her harf, gizli kelimedeki tekrar sayısı kadar eşleşebilir.
 
 ## Özellikler
 
-- **Zorluk seviyeleri:** 🙂 Kolay · 😐 Standart · 😈 Zor (her seviyenin kendi
-  günlük kelimesi ve istatistikleri vardır).
-- **Oyun modları:** 📅 Günlük (herkese aynı kelime, istatistiğe işlenir) ve
-  🔄 Alıştırma (rastgele, sınırsız).
-- **Yardımcılar:** ipucu (💡), satır temizleme (🧹) ve desene göre kelime arama
-  (🔍, yalnızca Alıştırma modunda).
+- **Günlük bulmaca:** herkese aynı kelime; sonuç istatistiklere işlenir.
+- **Arşiv:** önceki günleri oynama; arşiv sonuçları istatistikleri ve seriyi
+  etkilemez.
+- **Klavye araçları:** boşluk tuşuyla alt çizgi ekleme ve silgiyle aktif
+  satırı ve o satırdaki renk notlarını temizleme.
 - **Not tutma:** harf kutularına tıklayarak kendi renk işaretlerinizi
   koyabilirsiniz.
 - **İstatistikler:** oynanan, kazanma yüzdesi, seri, en uzun seri ve tahmin
@@ -36,7 +38,7 @@ oyun hiçbir sunucuya veri göndermez ve giriş/hesap sistemi içermez.
 
 ## Çalıştırma
 
-Tek dosyalık statik bir uygulamadır — derleme gerektirmez. `index.html`
+Tek dosyalık statik bir uygulamadır; derleme gerektirmez. `index.html`
 dosyasını doğrudan tarayıcıda açmanız yeterlidir:
 
 ```sh
@@ -49,9 +51,9 @@ python3 -m http.server 8000
 
 Tümü `index.html` içinde, şu bölümlerden oluşur:
 
-- **Word500trVeri** — sözlük (`SOZLUK`) ve zorluk havuzları (`HAVUZLAR`).
-- **Word500tr** — çekirdek oyun mantığı: günlük kelime üretimi, skorlama, ipucu
-  ve kelime arama.
+- **Word500trVeri** · sözlük (`SOZLUK`) ve tek cevap havuzu (`HAVUZLAR`).
+- **Word500tr** · çekirdek oyun mantığı: günlük kelime üretimi, skorlama ve
+  paylaşım metni.
 - **Word500trDepo** — `localStorage` üzerinden ayarlar, istatistik ve kayıtlı
   oyun yönetimi.
 - **Arayüz** — tahta, klavye, kutular ve olay yönetimi.

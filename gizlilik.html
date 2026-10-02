@@ -6,33 +6,47 @@
 <title>Gizlilik Politikası · HARF500</title>
 <meta name="robots" content="index,follow">
 <style>
-  :root { color-scheme: dark; }
+  :root { color-scheme: dark; --zemin: #141414; --yazi: #ededed; --soluk: #8e8e8e; --vurgu: #4a9d54; --cizgi: #303030; }
+  html[data-tema="acik"] { color-scheme: light; --zemin: #eceef1; --yazi: #171a1d; --soluk: #667180; --vurgu: #3d8a47; --cizgi: #d8dce1; }
+  html { background: var(--zemin); }
   body {
     margin: 0;
-    background: #141414;
-    color: #ededed;
+    background: var(--zemin);
+    color: var(--yazi);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     line-height: 1.6;
   }
   .sayfa { max-width: 46rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
-  a { color: #4a9d54; }
+  a { color: var(--vurgu); }
   h1 { font-size: 1.6rem; margin: .5rem 0 .25rem; }
   h2 { font-size: 1.15rem; margin: 2rem 0 .5rem; }
   p, li { font-size: .95rem; }
-  .tarih { color: #8e8e8e; font-size: .85rem; margin-top: 0; }
-  .geri { display: inline-block; margin-bottom: 1.5rem; color: #8e8e8e; text-decoration: none; }
-  .geri:hover { color: #ededed; }
-  .not { background: #1f1f1f; border-left: 3px solid #4a9d54; border-radius: 0 8px 8px 0; padding: .75rem 1rem; }
+  .tarih { color: var(--soluk); font-size: .85rem; margin-top: 0; }
+  .geri { display: inline-block; margin-bottom: 1.5rem; color: var(--soluk); text-decoration: none; }
+  .geri:hover { color: var(--yazi); }
+  .not { background: var(--zemin); border-left: 3px solid var(--vurgu); border-radius: 0 8px 8px 0; padding: .75rem 1rem; }
   ul { padding-left: 1.2rem; }
-  footer { margin-top: 3rem; border-top: 1px solid #303030; padding-top: 1rem; color: #8e8e8e; font-size: .85rem; }
+  footer { margin-top: 3rem; border-top: 1px solid var(--cizgi); padding-top: 1rem; color: var(--soluk); font-size: .85rem; }
 </style>
+<script>
+(function () {
+  var tema = 'sistem';
+  try { tema = (JSON.parse(localStorage.getItem('word500tr.ayarlar')) || {}).tema || tema; } catch (e) {}
+  var medya = window.matchMedia('(prefers-color-scheme: light)');
+  function uygula() {
+    document.documentElement.dataset.tema = tema === 'acik' || (tema === 'sistem' && medya.matches) ? 'acik' : 'koyu';
+  }
+  uygula();
+  if (medya.addEventListener) medya.addEventListener('change', uygula);
+})();
+</script>
 </head>
 <body>
 <div class="sayfa">
   <a class="geri" href="index.html">← Oyuna dön</a>
 
   <h1>Gizlilik Politikası</h1>
-  <p class="tarih">Son güncelleme: 17 Ağustos 2026</p>
+  <p class="tarih">Son güncelleme: 2 Ekim 2026</p>
 
   <p>
     Bu gizlilik politikası, <strong>HARF500</strong> ("oyun") kullanılırken
@@ -73,9 +87,9 @@
 
   <h2>4. Verilerinizi silme</h2>
   <p>
-    Oyun içindeki "İstatistikleri sıfırla" seçeneğiyle bir seviyenin
-    istatistiklerini temizleyebilir; tarayıcı verilerinizi silerek tüm yerel
-    kayıtları kaldırabilirsiniz. Cihazınız dışında saklanan bir veriniz yoktur.
+    Tarayıcınızdan bu siteye ait verileri silerek ayarlarınızı, oyun
+    ilerlemenizi ve istatistiklerinizi kaldırabilirsiniz.
+    Cihazınız dışında saklanan bir veriniz yoktur.
   </p>
 
   <h2>5. Çocukların gizliliği</h2>
