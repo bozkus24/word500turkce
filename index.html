@@ -352,22 +352,22 @@ main.panel {
 
 /* Tahminden sonra skor kutuları soldan sağa sırayla dönerek sayıyı gösterir.
    Sayı, kutu tam yan dönmüşken (yarı yolda) beliriyor.
-   Zamanlama js/arayuz.js içindeki CEVIRME_SURESI ile eşleşmeli. */
-.satir.yeni .rozet { animation: cevir .75s ease both; }
-.satir.yeni .rozet > span { animation: sayiBelir .75s ease both; }
+   Zamanlama aşağıdaki CEVIRME_SURESI ile eşleşmeli. */
+.satir.yeni .rozet { animation: cevir .18s ease both; }
+.satir.yeni .rozet > span { animation: sayiBelir .18s ease both; }
 
 .satir.yeni .rozet:nth-child(7),
-.satir.yeni .rozet:nth-child(7) > span { animation-delay: .25s; }
+.satir.yeni .rozet:nth-child(7) > span { animation-delay: .09s; }
 .satir.yeni .rozet:nth-child(8),
-.satir.yeni .rozet:nth-child(8) > span { animation-delay: .5s; }
+.satir.yeni .rozet:nth-child(8) > span { animation-delay: .18s; }
 
 /* Otomatik boyanan satır (5 yeşil = doğru tahmin, 5 kırmızı = harfler kelimede
    yok): harf kutuları da soldan sağa dönerek renkleriyle belirir. */
-.satir.yeni.otomatik .kutucuk { animation: cevir .75s ease both; }
-.satir.yeni.otomatik .kutucuk:nth-child(2) { animation-delay: .18s; }
-.satir.yeni.otomatik .kutucuk:nth-child(3) { animation-delay: .36s; }
-.satir.yeni.otomatik .kutucuk:nth-child(4) { animation-delay: .54s; }
-.satir.yeni.otomatik .kutucuk:nth-child(5) { animation-delay: .72s; }
+.satir.yeni.otomatik .kutucuk { animation: cevir .18s ease both; }
+.satir.yeni.otomatik .kutucuk:nth-child(2) { animation-delay: .09s; }
+.satir.yeni.otomatik .kutucuk:nth-child(3) { animation-delay: .18s; }
+.satir.yeni.otomatik .kutucuk:nth-child(4) { animation-delay: .27s; }
+.satir.yeni.otomatik .kutucuk:nth-child(5) { animation-delay: .36s; }
 
 @keyframes cevir {
   0% { transform: rotateX(0deg); }
@@ -2369,9 +2369,9 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
   var SOZLUK_KUME = new Set(Veri.SOZLUK);
   var GOSTERILECEK_EN_FAZLA = 300;
 
-  // Skor kutularının dönme animasyonu: son kutunun gecikmesi (.3s) + süresi (.5s).
-  // css/stil.css içindeki `cevir` animasyonuyla eşleşmeli.
-  var CEVIRME_SURESI = 1500;
+  // En uzun dönüş: beşinci harfin gecikmesi (360 ms) + dönüşü (180 ms).
+  // Yukarıdaki `cevir` animasyonu ve sıralı gecikmelerle eşleşmeli.
+  var CEVIRME_SURESI = 540;
 
   // Hareket azaltma tercihinde animasyon anında bittiği için beklemeye gerek yok.
   function cevirmeSuresi() {
