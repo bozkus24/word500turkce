@@ -4,7 +4,7 @@
 <script defer id="tp-privacy-script" src="/assets/privacy-controls.js?v=consent-v1"></script>
 <meta name="google-adsense-account" content="ca-pub-7993571496408496">
 
-<script src="/assets/game-remote.js"></script>
+<script src="/assets/game-remote.js?v=20261008"></script>
 <!-- game-security-start -->
 <script>
 /* Kayıtlar güvenilir girdi değildir. Eski geçerli kayıtları koruyarak türleri doğrula. */
@@ -330,9 +330,9 @@ main.panel {
 .kutucuk.kilitli { cursor: default; opacity: 1; }
 
 /* Oyuncunun kendi işaretleri */
-.kutucuk[data-boya="kirmizi"] { background: var(--kirmizi); color: var(--kirmizi-yazi); }
-.kutucuk[data-boya="sari"] { background: var(--sari); color: var(--sari-yazi); }
-.kutucuk[data-boya="yesil"] { background: var(--yesil); color: var(--yesil-yazi); }
+.kutucuk[data-boya="kirmizi"] { --boya-renk:var(--kirmizi); --boya-yazi:var(--kirmizi-yazi); background: var(--kirmizi); color: var(--kirmizi-yazi); }
+.kutucuk[data-boya="sari"] { --boya-renk:var(--sari); --boya-yazi:var(--sari-yazi); background: var(--sari); color: var(--sari-yazi); }
+.kutucuk[data-boya="yesil"] { --boya-renk:var(--yesil); --boya-yazi:var(--yesil-yazi); background: var(--yesil); color: var(--yesil-yazi); }
 .kutucuk[data-boya]:not([data-boya=""]) { animation: buyu .14s ease; }
 
 @keyframes buyu {
@@ -351,32 +351,39 @@ main.panel {
 .rozet.kirmizi { background: var(--kirmizi); color: var(--kirmizi-yazi); }
 
 /* Tahminden sonra skor kutuları soldan sağa sırayla dönerek sayıyı gösterir.
-   Sayı, kutu tam yan dönmüşken (yarı yolda) beliriyor.
+   Sayı ilk yüzde yirmide belirir; açılma yumuşakça tamamlanır.
    Zamanlama aşağıdaki CEVIRME_SURESI ile eşleşmeli. */
-.satir.yeni .rozet { animation: cevir .18s ease both; }
-.satir.yeni .rozet > span { animation: sayiBelir .18s ease both; }
+.satir.yeni .rozet { animation: cevir .32s ease both; }
+.satir.yeni .rozet > span { animation: sayiBelir .32s ease both; }
 
 .satir.yeni .rozet:nth-child(7),
-.satir.yeni .rozet:nth-child(7) > span { animation-delay: .09s; }
+.satir.yeni .rozet:nth-child(7) > span { animation-delay: .22s; }
 .satir.yeni .rozet:nth-child(8),
-.satir.yeni .rozet:nth-child(8) > span { animation-delay: .18s; }
+.satir.yeni .rozet:nth-child(8) > span { animation-delay: .44s; }
 
 /* Otomatik boyanan satır (5 yeşil = doğru tahmin, 5 kırmızı = harfler kelimede
    yok): harf kutuları da soldan sağa dönerek renkleriyle belirir. */
-.satir.yeni.otomatik .kutucuk { animation: cevir .18s ease both; }
-.satir.yeni.otomatik .kutucuk:nth-child(2) { animation-delay: .09s; }
-.satir.yeni.otomatik .kutucuk:nth-child(3) { animation-delay: .18s; }
-.satir.yeni.otomatik .kutucuk:nth-child(4) { animation-delay: .27s; }
-.satir.yeni.otomatik .kutucuk:nth-child(5) { animation-delay: .36s; }
+.satir.yeni.otomatik .kutucuk { animation: harfCevir .32s ease both; }
+.satir.yeni.otomatik .kutucuk:nth-child(2) { animation-delay: .22s; }
+.satir.yeni.otomatik .kutucuk:nth-child(3) { animation-delay: .44s; }
+.satir.yeni.otomatik .kutucuk:nth-child(4) { animation-delay: .66s; }
+.satir.yeni.otomatik .kutucuk:nth-child(5) { animation-delay: .88s; }
 
 @keyframes cevir {
   0% { transform: rotateX(0deg); }
-  50% { transform: rotateX(90deg); }
+  20% { transform: rotateX(90deg); }
   100% { transform: rotateX(0deg); }
 }
 @keyframes sayiBelir {
-  0%, 49% { opacity: 0; }
-  50%, 100% { opacity: 1; }
+  0%, 19% { opacity: 0; }
+  20%, 100% { opacity: 1; }
+}
+@keyframes harfCevir {
+  0% { transform:rotateX(0deg); }
+  0%,19% { background:var(--kutucuk-dolu); color:var(--yazi); }
+  20% { transform:rotateX(90deg); }
+  20%,100% { background:var(--boya-renk); color:var(--boya-yazi); }
+  100% { transform:rotateX(0deg); }
 }
 
 @keyframes acil {
@@ -2369,9 +2376,9 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
   var SOZLUK_KUME = new Set(Veri.SOZLUK);
   var GOSTERILECEK_EN_FAZLA = 300;
 
-  // En uzun dönüş: beşinci harfin gecikmesi (360 ms) + dönüşü (180 ms).
+  // En uzun dönüş: beşinci harfin gecikmesi (880 ms) + dönüşü (320 ms).
   // Yukarıdaki `cevir` animasyonu ve sıralı gecikmelerle eşleşmeli.
-  var CEVIRME_SURESI = 540;
+  var CEVIRME_SURESI = 1200;
 
   // Hareket azaltma tercihinde animasyon anında bittiği için beklemeye gerek yok.
   function cevirmeSuresi() {
@@ -2747,6 +2754,8 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
 
   // Sadece yazılmakta olan satırı tazele (her tuşta tüm tahtayı çizmemek için).
   function aktifSatiriTazele() {
+    var tahmin=durum.aktif;
+    TrPuzzleRemote.prepare(remoteSession,tahmin.length===K.HARF_SAYISI&&SOZLUK_KUME.has(tahmin)&&!durum.gecmis.some(function(adim){return adim.kelime===tahmin;})?K.buyut(tahmin):null);
     var tahta = $('#tahta');
     var satirNo = durum.gecmis.length;
     if (durum.bitti || satirNo >= K.TAHMIN_HAKKI) return;
@@ -2955,7 +2964,7 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
 
     var request=remoteRequest,opened=durum;kilit=true;
     var view;
-    try{view=await TrPuzzleRemote.move(remoteSession,K.buyut(tahmin));}
+    try{view=await TrPuzzleRemote.move(remoteSession,K.buyut(tahmin),$('#tahta').children[durum.gecmis.length]);}
     catch(e){if(request===remoteRequest){kilit=false;hataVer(e.message);}return;}
     if(request!==remoteRequest||opened!==durum)return;
     kilit=false;durum.kelime=view.answer||null;durum.token=remoteSession.token;
@@ -3002,12 +3011,16 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
       var bekleme = cevirmeSuresi();
       kilit = true;
       if (kazandi) {
-        window.setTimeout(function () { sonSatir.classList.add('zafer'); }, bekleme);
+        window.setTimeout(function () { if(request===remoteRequest&&opened===durum)sonSatir.classList.add('zafer'); }, bekleme);
       }
       window.setTimeout(function () {
+        if(request!==remoteRequest||opened!==durum)return;
         kilit = false;
         sonucGoster();
       }, bekleme + (kazandi ? 600 : 200));
+    } else {
+      kilit=true;
+      window.setTimeout(function(){if(request===remoteRequest&&opened===durum)kilit=false;},cevirmeSuresi()?(donsun?CEVIRME_SURESI:760):0);
     }
   }
 
